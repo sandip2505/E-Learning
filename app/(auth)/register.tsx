@@ -7,6 +7,7 @@ import {
     KeyboardAvoidingView,
     Platform,
     ScrollView,
+    StatusBar,
     StyleSheet,
     Text,
     TextInput,
@@ -76,23 +77,25 @@ const RegisterScreen = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <Stack.Screen
-                options={{
-                    title: "Register",
-                    headerStyle: {
-                        backgroundColor: "#4A90E2",
-                    },
-                        headerTintColor: "#fff",
-                        headerTitleStyle: {
-                            fontWeight: "bold",
-                        },
-                    }}
-                />
+            <StatusBar barStyle="light-content" backgroundColor="#007AFF" />
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 style={styles.keyboardView}
             >
-                <ScrollView contentContainerStyle={styles.scrollContent}>
+                <Stack.Screen options={{ headerShown: false }} />
+
+                <View style={styles.customHeader}>
+                    <TouchableOpacity
+                        onPress={() => router.back()}
+                        style={styles.backButton}
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    >
+                        <Ionicons name="chevron-back" size={24} color="#fff" />
+                    </TouchableOpacity>
+                    <Text style={styles.customHeaderTitle}>Register</Text>
+                    <View style={styles.headerSpacer} />
+                </View>
+                <ScrollView contentContainerStyle={styles.scrollContainer}>
                     <View style={styles.header}>
                         <Text style={styles.title}>Create Account</Text>
                         <Text style={styles.subtitle}>Join our learning community</Text>
@@ -198,15 +201,45 @@ const RegisterScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f8f9fa',
+        backgroundColor: '#FFFFFF',
     },
     keyboardView: {
         flex: 1,
     },
-    scrollContent: {
+    scrollContainer: {
         flexGrow: 1,
         justifyContent: 'center',
         padding: 24,
+    },
+    customHeader: {
+        backgroundColor: '#007AFF',
+        paddingTop: Platform.OS === 'ios' ? 10 : StatusBar.currentHeight,
+        paddingBottom: 16,
+        paddingHorizontal: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
+    backButton: {
+        padding: 8,
+        borderRadius: 20,
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    },
+    customHeaderTitle: {
+        fontSize: 20,
+        fontWeight: '600',
+        color: '#fff',
+    },
+    headerSpacer: {
+        width: 40,
     },
     header: {
         alignItems: 'center',

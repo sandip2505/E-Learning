@@ -1,588 +1,888 @@
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Dimensions, Image, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+    Dimensions,
+    FlatList,
+    Image,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-// const { width, height } = Dimensions.get('window');
-const { width: width, height: height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
+// Dummy Data
+const ongoingCourses = [
+  {
+    id: '1',
+    title: 'Complete Web Development Bootcamp',
+    instructor: 'Sarah Johnson',
+    image: 'https://img-c.udemycdn.com/course/750x422/548278_b005_9.jpg',
+    progress: 0.65,
+    totalLessons: 45,
+    completedLessons: 29,
+    nextLesson: 'React Router Implementation',
+    nextLessonDuration: '12 min',
+    enrolledDate: '2024-01-15',
+    lastWatched: '2 hours ago',
+    totalDuration: '45 hours',
+    category: 'Technology',
+    rating: 4.8,
+    downloadedLessons: 8,
+  },
+  {
+    id: '2',
+    title: 'UI/UX Design Masterclass',
+    instructor: 'Mike Chen',
+    image: 'https://img.freepik.com/free-vector/gradient-ui-ux-background_23-2149052117.jpg?semt=ais_hybrid&w=740&q=80',
+    progress: 0.30,
+    totalLessons: 28,
+    completedLessons: 8,
+    nextLesson: 'Color Theory and Psychology',
+    nextLessonDuration: '18 min',
+    enrolledDate: '2024-02-01',
+    lastWatched: '1 day ago',
+    totalDuration: '32 hours',
+    category: 'Design',
+    rating: 4.9,
+    downloadedLessons: 3,
+  },
+  {
+    id: '3',
+    title: 'Digital Marketing Strategy',
+    instructor: 'Emma Davis',
+    image: 'https://www.simplilearn.com/ice9/free_resources_article_thumb/What_is_digital_marketing.jpg',
+    progress: 0.85,
+    totalLessons: 35,
+    completedLessons: 30,
+    nextLesson: 'Campaign Analysis and ROI',
+    nextLessonDuration: '25 min',
+    enrolledDate: '2024-01-08',
+    lastWatched: '3 hours ago',
+    totalDuration: '28 hours',
+    category: 'Marketing',
+    rating: 4.7,
+    downloadedLessons: 12,
+  },
+];
 
-export default function Browse() {
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('All');
+const completedCourses = [
+  {
+    id: '1',
+    title: 'Python for Data Science',
+    instructor: 'Dr. Alex Morgan',
+    image: 'https://media.geeksforgeeks.org/wp-content/cdn-uploads/20230318230239/Python-Data-Science-Tutorial.jpg',
+    completedDate: '2024-01-20',
+    totalDuration: '40 hours',
+    category: 'Technology',
+    rating: 4.6,
+    userRating: 5,
+    certificateId: 'CERT-001-2024',
+    finalGrade: 'A',
+    skillsLearned: ['Python Programming', 'Data Analysis', 'Machine Learning Basics', 'Pandas & NumPy'],
+  },
+  {
+    id: '2',
+    title: 'Graphic Design Fundamentals',
+    instructor: 'Anna Rodriguez',
+    image: 'https://img.freepik.com/free-vector/gradient-ui-ux-background_23-2149052117.jpg?semt=ais_hybrid&w=740&q=80',
+    completedDate: '2024-02-15',
+    totalDuration: '25 hours',
+    category: 'Design',
+    rating: 4.5,
+    userRating: 4,
+    certificateId: 'CERT-002-2024',
+    finalGrade: 'A-',
+    skillsLearned: ['Adobe Photoshop', 'Typography', 'Color Theory', 'Brand Design'],
+  },
+  {
+    id: '3',
+    title: 'Business Strategy Fundamentals',
+    instructor: 'Robert Kim',
+    image: 'https://media.geeksforgeeks.org/wp-content/uploads/20240223125319/Business-Strategy-copy.webp',
+    completedDate: '2024-01-30',
+    totalDuration: '22 hours',
+    category: 'Business',
+    rating: 4.7,
+    userRating: 5,
+    certificateId: 'CERT-003-2024',
+    finalGrade: 'A+',
+    skillsLearned: ['Strategic Planning', 'Market Analysis', 'Competitive Analysis', 'Business Modeling'],
+  },
+];
 
-    const categories = [
-        'All', 'Programming', 'Design', 'Business',
-        'Marketing', 'Data Science', 'AI & ML', 'Cloud Computing'
-    ];
+const wishlistCourses = [
+  {
+    id: '1',
+    title: 'Advanced React Native Development',
+    instructor: 'David Wilson',
+    image: 'https://img-c.udemycdn.com/course/750x422/548278_b005_9.jpg',
+    price: '₹899',
+    originalPrice: '₹1799',
+    discount: '50%',
+    rating: 4.8,
+    students: 12400,
+    duration: '55 hours',
+    category: 'Technology',
+    addedDate: '2024-02-10',
+    bestseller: true,
+    lastPriceCheck: '₹899',
+    priceDropped: false,
+  },
+  {
+    id: '2',
+    title: 'Advanced Photography Techniques',
+    instructor: 'Lisa Parker',
+    image: 'https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=1440,h=756,fit=crop,f=jpeg/YleqW8eqJrFgg956/social-share-1920x1080-3-A85EG14X87iaEK49.jpg',
+    price: '₹699',
+    originalPrice: '₹1399',
+    discount: '50%',
+    rating: 4.9,
+    students: 8900,
+    duration: '35 hours',
+    category: 'Photography',
+    addedDate: '2024-02-05',
+    bestseller: false,
+    lastPriceCheck: '₹999',
+    priceDropped: true,
+  },
+  {
+    id: '3',
+    title: 'Machine Learning with TensorFlow',
+    instructor: 'Dr. James Wilson',
+    image: 'https://media.geeksforgeeks.org/wp-content/cdn-uploads/20230318230239/Python-Data-Science-Tutorial.jpg',
+    price: '₹1299',
+    originalPrice: '₹2599',
+    discount: '50%',
+    rating: 4.7,
+    students: 15600,
+    duration: '65 hours',
+    category: 'Technology',
+    addedDate: '2024-01-28',
+    bestseller: true,
+    lastPriceCheck: '₹1299',
+    priceDropped: false,
+  },
+];
 
-    const courses = [
-        {
-            id: 1,
-            title: 'Advanced React Native Development',
-            instructor: 'John Doe',
-            rating: 4.8,
-            students: 1250,
-            price: '$49.99',
-            originalPrice: '$89.99',
-            image: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=600&q=80',
-            category: 'Programming',
-            duration: '12 hours',
-            level: 'Intermediate',
-            isBestseller: true
-        },
-        {
-            id: 2,
-            title: 'UI/UX Design Masterclass',
-            instructor: 'Jane Smith',
-            rating: 4.9,
-            students: 980,
-            price: '$39.99',
-            originalPrice: '$69.99',
-            image: 'https://images.unsplash.com/photo-1593508512255-86ab42a8e620?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=600&q=80',
-            category: 'Design',
-            duration: '15 hours',
-            level: 'Beginner',
-            isBestseller: true
-        },
-        {
-            id: 3,
-            title: 'Digital Marketing Strategy 2023',
-            instructor: 'Mike Johnson',
-            rating: 4.7,
-            students: 750,
-            price: '$29.99',
-            originalPrice: '$49.99',
-            image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=600&q=80',
-            category: 'Marketing',
-            duration: '10 hours',
-            level: 'Advanced'
-        },
-        {
-            id: 4,
-            title: 'Python for Data Science',
-            instructor: 'Sarah Wilson',
-            rating: 4.8,
-            students: 2100,
-            price: '$59.99',
-            originalPrice: '$99.99',
-            image: 'https://images.unsplash.com/photo-1526379879527-8559ecfcaec0?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=600&q=80',
-            category: 'Data Science',
-            duration: '18 hours',
-            level: 'Intermediate',
-            isBestseller: true
-        },
-        {
-            id: 5,
-            title: 'AWS Cloud Practitioner',
-            instructor: 'Robert Brown',
-            rating: 4.6,
-            students: 1650,
-            price: '$69.99',
-            originalPrice: '$119.99',
-            image: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=600&q=80',
-            category: 'Cloud Computing',
-            duration: '14 hours',
-            level: 'Beginner'
-        },
-        {
-            id: 6,
-            title: 'Machine Learning Fundamentals',
-            instructor: 'Emily Chen',
-            rating: 4.9,
-            students: 3200,
-            price: '$79.99',
-            originalPrice: '$129.99',
-            image: 'https://images.unsplash.com/photo-1555949963-aa79dcee981c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=600&q=80',
-            category: 'AI & ML',
-            duration: '20 hours',
-            level: 'Advanced',
-            isBestseller: true
-        },
-    ];
+const tabs = [
+  { id: 'ongoing', name: 'Ongoing', count: ongoingCourses.length },
+  { id: 'completed', name: 'Completed', count: completedCourses.length },
+  { id: 'wishlist', name: 'Wishlist', count: wishlistCourses.length },
+];
 
-    const filteredCourses = selectedCategory === 'All'
-        ? courses
-        : courses.filter(course => course.category === selectedCategory);
+export default function MyCoursesPage() {
+  const [activeTab, setActiveTab] = useState('ongoing');
 
-    return (
-        <SafeAreaView style={styles.container}>
-            {/* Header */}
-            <View style={styles.header}>
-                <View style={styles.headerText}>
-                    <Text style={styles.greeting}>Hello, Learner!</Text>
-                    <Text style={styles.title}>Find Your Perfect Course</Text>
-                </View>
-                <TouchableOpacity style={styles.profileButton}>
-                    <Ionicons name="person-outline" size={width * 0.06} color="#333" />
-                </TouchableOpacity>
+  const renderOngoingCourse = ({ item }: { item: any }) => (
+    <TouchableOpacity style={styles.courseCard} onPress={() => router.push(`/course/lessons/${item.id}`)}>
+      <Image source={{ uri: item.image }} style={styles.courseImage} />
+      <View style={styles.courseContent}>
+        <View style={styles.courseHeader}>
+          <View style={styles.categoryBadge}>
+            <Text style={styles.categoryText}>{item.category}</Text>
+          </View>
+          <View style={styles.ratingContainer}>
+            <Ionicons name="star" size={12} color="#FFD700" />
+            <Text style={styles.ratingText}>{item.rating}</Text>
+          </View>
+        </View>
+        
+        <Text style={styles.courseTitle}>{item.title}</Text>
+        <Text style={styles.courseInstructor}>by {item.instructor}</Text>
+        
+        <View style={styles.progressSection}>
+          <View style={styles.progressHeader}>
+            <Text style={styles.progressText}>
+              {item.completedLessons}/{item.totalLessons} lessons completed
+            </Text>
+            <Text style={styles.progressPercent}>{Math.round(item.progress * 100)}%</Text>
+          </View>
+          <View style={styles.progressBar}>
+            <View style={[styles.progressFill, { width: `${item.progress * 100}%` }]} />
+          </View>
+        </View>
+
+        <View style={styles.nextLessonSection}>
+          <Text style={styles.nextLessonLabel}>Next lesson:</Text>
+          <Text style={styles.nextLessonTitle}>{item.nextLesson}</Text>
+          <Text style={styles.nextLessonDuration}>{item.nextLessonDuration}</Text>
+        </View>
+
+        <View style={styles.courseFooter}>
+          <View style={styles.courseInfo}>
+            <Text style={styles.lastWatched}>Last watched: {item.lastWatched}</Text>
+            <View style={styles.downloadInfo}>
+              <Ionicons name="download" size={14} color="#666" />
+              <Text style={styles.downloadText}>{item.downloadedLessons} downloaded</Text>
             </View>
+          </View>
+          <TouchableOpacity style={styles.resumeButton} onPress={() => router.push(`/course/lessons/${item.id}`)}>
+            <Ionicons name="play" size={16} color="white" />
+            <Text style={styles.resumeButtonText}>Resume</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
 
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-                {/* Search Bar */}
-                <View style={styles.searchContainer}>
-                    <Ionicons name="search-outline" size={width * 0.05} color="#666" style={styles.searchIcon} />
-                    <TextInput
-                        style={styles.searchInput}
-                        placeholder="Search courses, instructors, or topics..."
-                        value={searchQuery}
-                        onChangeText={setSearchQuery}
-                        placeholderTextColor="#999"
-                    />
-                    <TouchableOpacity style={styles.filterButton}>
-                        <Ionicons name="options-outline" size={width * 0.05} color="#fff" />
-                    </TouchableOpacity>
-                </View>
+  const renderCompletedCourse = ({ item }: { item: any }) => (
+    <TouchableOpacity style={styles.courseCard} onPress={() => router.push(`/course/${item.id}`)}>
+      <View style={styles.completedImageContainer}>
+        <Image source={{ uri: item.image }} style={styles.courseImage} />
+        <View style={styles.completedOverlay}>
+          <Ionicons name="checkmark-circle" size={30} color="#4CAF50" />
+        </View>
+      </View>
+      <View style={styles.courseContent}>
+        <View style={styles.courseHeader}>
+          <View style={styles.categoryBadge}>
+            <Text style={styles.categoryText}>{item.category}</Text>
+          </View>
+          <View style={styles.gradeContainer}>
+            <Text style={styles.gradeText}>Grade: {item.finalGrade}</Text>
+          </View>
+        </View>
+        
+        <Text style={styles.courseTitle}>{item.title}</Text>
+        <Text style={styles.courseInstructor}>by {item.instructor}</Text>
+        
+        <View style={styles.completedInfo}>
+          <Text style={styles.completedDate}>Completed on {item.completedDate}</Text>
+          <Text style={styles.courseDuration}>{item.totalDuration}</Text>
+        </View>
 
-                {/* Categories */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Categories</Text>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesContainer}>
-                        {categories.map((category) => (
-                            <TouchableOpacity
-                                key={category}
-                                style={[
-                                    styles.categoryItem,
-                                    selectedCategory === category && styles.selectedCategory
-                                ]}
-                                onPress={() => setSelectedCategory(category)}
-                            >
-                                <Text style={[
-                                    styles.categoryText,
-                                    selectedCategory === category && styles.selectedCategoryText
-                                ]}>
-                                    {category}
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
-                    </ScrollView>
-                </View>
+        <View style={styles.skillsSection}>
+          <Text style={styles.skillsLabel}>Skills learned:</Text>
+          <View style={styles.skillsContainer}>
+            {item.skillsLearned.slice(0, 3).map((skill: string, index: number) => (
+              <View key={index} style={styles.skillBadge}>
+                <Text style={styles.skillText}>{skill}</Text>
+              </View>
+            ))}
+            {item.skillsLearned.length > 3 && (
+              <View style={styles.skillBadge}>
+                <Text style={styles.skillText}>+{item.skillsLearned.length - 3}</Text>
+              </View>
+            )}
+          </View>
+        </View>
 
-                {/* Featured Courses */}
-                <View style={styles.section}>
-                    <View style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>Featured Courses</Text>
-                        <TouchableOpacity>
-                            <Text style={styles.seeAll}>See All</Text>
-                        </TouchableOpacity>
-                    </View>
+        <View style={styles.completedFooter}>
+          <View style={styles.userRatingContainer}>
+            <Text style={styles.userRatingLabel}>Your rating:</Text>
+            <View style={styles.userRating}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Ionicons
+                  key={star}
+                  name="star"
+                  size={14}
+                  color={star <= item.userRating ? "#FFD700" : "#ddd"}
+                />
+              ))}
+            </View>
+          </View>
+          <TouchableOpacity style={styles.certificateButton} onPress={() => router.push(`/certificates/${item.id}`)}>
+            <Ionicons name="ribbon" size={16} color="#007AFF" />
+            <Text style={styles.certificateButtonText}>Certificate</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
 
-                    <View style={styles.courseList}>
-                        {filteredCourses.map((course) => (
-                            <TouchableOpacity key={course.id} style={styles.courseCard}>
-                                <Image source={{ uri: course.image }} style={styles.courseImage} />
-                                {course.isBestseller && (
-                                    <View style={styles.bestsellerBadge}>
-                                        <Text style={styles.bestsellerText}>Bestseller</Text>
-                                    </View>
-                                )}
-                                <View style={styles.levelBadge}>
-                                    <Text style={styles.levelText}>{course.level}</Text>
-                                </View>
-                                <View style={styles.courseInfo}>
-                                    <Text style={styles.courseTitle} numberOfLines={2}>{course.title}</Text>
-                                    <Text style={styles.instructor}>by {course.instructor}</Text>
+  const renderWishlistCourse = ({ item }: { item: any }) => (
+    <TouchableOpacity style={styles.courseCard} onPress={() => router.push(`/course/${item.id}`)}>
+      <View style={styles.wishlistImageContainer}>
+        <Image source={{ uri: item.image }} style={styles.courseImage} />
+        {item.bestseller && (
+          <View style={styles.bestsellerBadge}>
+            <Text style={styles.bestsellerText}>Bestseller</Text>
+          </View>
+        )}
+        {item.priceDropped && (
+          <View style={styles.priceDropBadge}>
+            <Ionicons name="trending-down" size={12} color="white" />
+            <Text style={styles.priceDropText}>Price Drop!</Text>
+          </View>
+        )}
+        <TouchableOpacity
+          style={styles.removeWishlistButton}
+          onPress={() => {/* Handle remove from wishlist */}}
+        >
+          <Ionicons name="heart" size={20} color="#FF6B6B" />
+        </TouchableOpacity>
+      </View>
+      <View style={styles.courseContent}>
+        <View style={styles.courseHeader}>
+          <View style={styles.categoryBadge}>
+            <Text style={styles.categoryText}>{item.category}</Text>
+          </View>
+          <View style={styles.ratingContainer}>
+            <Ionicons name="star" size={12} color="#FFD700" />
+            <Text style={styles.ratingText}>{item.rating}</Text>
+          </View>
+        </View>
+        
+        <Text style={styles.courseTitle}>{item.title}</Text>
+        <Text style={styles.courseInstructor}>by {item.instructor}</Text>
+        
+        <View style={styles.wishlistInfo}>
+          <Text style={styles.studentsCount}>{item.students.toLocaleString()} students</Text>
+          <Text style={styles.courseDuration}>{item.duration}</Text>
+          <Text style={styles.addedDate}>Added: {item.addedDate}</Text>
+        </View>
 
-                                    <View style={styles.courseMeta}>
-                                        <View style={styles.metaItem}>
-                                            <Ionicons name="time-outline" size={width * 0.035} color="#666" />
-                                            <Text style={styles.metaText}>{course.duration}</Text>
-                                        </View>
-                                        <View style={styles.metaItem}>
-                                            <Ionicons name="people-outline" size={width * 0.035} color="#666" />
-                                            <Text style={styles.metaText}>{course.students.toLocaleString()}+ enrolled</Text>
-                                        </View>
-                                    </View>
+        <View style={styles.priceSection}>
+          <View style={styles.priceContainer}>
+            <Text style={styles.currentPrice}>{item.price}</Text>
+            <Text style={styles.originalPrice}>{item.originalPrice}</Text>
+            <View style={styles.discountBadge}>
+              <Text style={styles.discountText}>{item.discount} OFF</Text>
+            </View>
+          </View>
+        </View>
 
-                                    <View style={styles.courseDetails}>
-                                        <View style={styles.ratingContainer}>
-                                            <Ionicons name="star" size={width * 0.035} color="#FFD700" />
-                                            <Text style={styles.rating}>{course.rating}</Text>
-                                        </View>
-                                        <View style={styles.priceContainer}>
-                                            <Text style={styles.originalPrice}>{course.originalPrice}</Text>
-                                            <Text style={styles.price}>{course.price}</Text>
-                                        </View>
-                                    </View>
-                                </View>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
-                </View>
+        <View style={styles.wishlistFooter}>
+          <TouchableOpacity style={styles.moveToCartButton} onPress={() => {/* Handle move to cart */}}>
+            <Text style={styles.moveToCartText}>Move to Cart</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.buyNowButton} onPress={() => router.push(`/enrollment/checkout`)}>
+            <Text style={styles.buyNowText}>Buy Now</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
 
-                {/* Popular Instructors */}
-                <View style={styles.section}>
-                    <View style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>Top Instructors</Text>
-                        <TouchableOpacity>
-                            <Text style={styles.seeAll}>See All</Text>
-                        </TouchableOpacity>
-                    </View>
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'ongoing':
+        return (
+          <FlatList
+            data={ongoingCourses}
+            renderItem={renderOngoingCourse}
+            keyExtractor={(item) => item.id}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.listContainer}
+          />
+        );
+      case 'completed':
+        return (
+          <FlatList
+            data={completedCourses}
+            renderItem={renderCompletedCourse}
+            keyExtractor={(item) => item.id}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.listContainer}
+          />
+        );
+      case 'wishlist':
+        return (
+          <FlatList
+            data={wishlistCourses}
+            renderItem={renderWishlistCourse}
+            keyExtractor={(item) => item.id}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.listContainer}
+          />
+        );
+      default:
+        return null;
+    }
+  };
 
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.instructorsContainer}>
-                        {[
-                            { id: 1, name: 'John Doe', field: 'React Native', students: 12500, image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=200&q=80' },
-                            { id: 2, name: 'Jane Smith', field: 'UI/UX Design', students: 9800, image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=200&q=80' },
-                            { id: 3, name: 'Mike Johnson', field: 'Marketing', students: 15600, image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=200&q=80' },
-                            { id: 4, name: 'Sarah Wilson', field: 'Data Science', students: 21000, image: 'https://images.unsplash.com/photo-1554151228-14d9def656e4?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=200&q=80' },
-                        ].map((instructor) => (
-                            <TouchableOpacity key={instructor.id} style={styles.instructorCard}>
-                                <Image source={{ uri: instructor.image }} style={styles.instructorImage} />
-                                <Text style={styles.instructorName} numberOfLines={2}>{instructor.name}</Text>
-                                <Text style={styles.instructorField} numberOfLines={1}>{instructor.field}</Text>
-                                <Text style={styles.instructorStudents}>{instructor.students.toLocaleString()}+ students</Text>
-                            </TouchableOpacity>
-                        ))}
-                    </ScrollView>
-                </View>
+  return (
+    <SafeAreaView style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+       
+        <Text style={styles.headerTitle}>My Courses</Text>
+        
+      </View>
 
-                {/* Testimonials */}
-                <View style={[styles.section, { marginBottom: height * 0.02 }]}>
-                    <View style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>Student Testimonials</Text>
-                        <TouchableOpacity>
-                            <Text style={styles.seeAll}>See All</Text>
-                        </TouchableOpacity>
-                    </View>
+      {/* Tabs */}
+      <View style={styles.tabContainer}>
+        {tabs.map((tab) => (
+          <TouchableOpacity
+            key={tab.id}
+            style={[styles.tab, activeTab === tab.id && styles.activeTab]}
+            onPress={() => setActiveTab(tab.id)}
+          >
+            <Text style={[styles.tabText, activeTab === tab.id && styles.activeTabText]}>
+              {tab.name}
+            </Text>
+            <View style={[styles.tabBadge, activeTab === tab.id && styles.activeTabBadge]}>
+              <Text style={[styles.tabBadgeText, activeTab === tab.id && styles.activeTabBadgeText]}>
+                {tab.count}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        ))}
+      </View>
 
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.testimonialsContainer}>
-                        {[
-                            { id: 1, name: 'Alex Thompson', text: 'This platform transformed my career! The courses are comprehensive and practical.', rating: 5, avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=200&q=80' },
-                            { id: 2, name: 'Maria Garcia', text: 'The instructors are industry experts who really know how to teach complex concepts.', rating: 5, avatar: 'https://images.unsplash.com/photo-1552058544-f2b08422138a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=200&q=80' },
-                            { id: 3, name: 'James Wilson', text: 'I landed my dream job after completing the Data Science program. Highly recommended!', rating: 4, avatar: 'https://images.unsplash.com/photo-1508341591423-4347099e1f19?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=200&q=80' },
-                        ].map((testimonial) => (
-                            <View key={testimonial.id} style={styles.testimonialCard}>
-                                <View style={styles.testimonialHeader}>
-                                    <Image source={{ uri: testimonial.avatar }} style={styles.testimonialAvatar} />
-                                    <View style={styles.testimonialInfo}>
-                                        <Text style={styles.testimonialName}>{testimonial.name}</Text>
-                                        <View style={styles.ratingContainer}>
-                                            {[...Array(5)].map((_, i) => (
-                                                <Ionicons
-                                                    key={i}
-                                                    name="star"
-                                                    size={width * 0.035}
-                                                    color={i < testimonial.rating ? "#FFD700" : "#ccc"}
-                                                />
-                                            ))}
-                                        </View>
-                                    </View>
-                                </View>
-                                <Text style={styles.testimonialText}>"{testimonial.text}"</Text>
-                            </View>
-                        ))}
-                    </ScrollView>
-                </View>
-            </ScrollView>
-        </SafeAreaView>
-    );
+      {/* Content */}
+      <View style={styles.content}>
+        {renderContent()}
+      </View>
+
+      {/* Summary Stats (Optional) */}
+      {activeTab === 'ongoing' && (
+        <View style={styles.summaryContainer}>
+          <Text style={styles.summaryText}>
+            Keep learning! You have {ongoingCourses.length} courses in progress
+          </Text>
+        </View>
+      )}
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#f8f9fa',
-    },
-    scrollContent: {
-        paddingBottom: height * 0.02,
-    },
-     header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: width * 0.05,
-        paddingTop: height * 0.07,
-        paddingBottom: height * 0.02,
-        backgroundColor: '#fff',
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-    },
-    headerText: {
-        flex: 1,
-    },
-    greeting: {
-        fontSize: width * 0.035,
-        color: '#666',
-    },
-    title: {
-        fontSize: width * 0.055,
-        fontWeight: 'bold',
-        color: '#333',
-        marginTop: 2,
-    },
-    profileButton: {
-        width: width * 0.1,
-        height: width * 0.1,
-        borderRadius: width * 0.05,
-        backgroundColor: '#f0f0f0',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    searchContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#fff',
-        marginHorizontal: width * 0.05,
-        marginVertical: height * 0.025,
-        paddingHorizontal: width * 0.04,
-        paddingVertical: height * 0.015,
-        borderRadius: width * 0.03,
-        elevation: 3,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-    },
-    searchIcon: {
-        marginRight: width * 0.025,
-    },
-    searchInput: {
-        flex: 1,
-        fontSize: width * 0.04,
-        color: '#333',
-    },
-    filterButton: {
-        width: width * 0.09,
-        height: width * 0.09,
-        borderRadius: width * 0.025,
-        backgroundColor: '#4A90E2',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    section: {
-        marginBottom: height * 0.03,
-    },
-    sectionHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: width * 0.05,
-        marginBottom: height * 0.02,
-    },
-    sectionTitle: {
-        fontSize: width * 0.045,
-        fontWeight: 'bold',
-        color: '#333',
-    },
-    seeAll: {
-        fontSize: width * 0.035,
-        color: '#4A90E2',
-        fontWeight: '500',
-    },
-    categoriesContainer: {
-        paddingHorizontal: width * 0.04,
-        marginBottom: height * 0.015,
-    },
-    categoryItem: {
-        paddingHorizontal: width * 0.05,
-        paddingVertical: height * 0.012,
-        marginRight: width * 0.025,
-        backgroundColor: '#fff',
-        borderRadius: width * 0.05,
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-    },
-    selectedCategory: {
-        backgroundColor: '#4A90E2',
-    },
-    categoryText: {
-        fontSize: width * 0.035,
-        color: '#666',
-        fontWeight: '500',
-    },
-    selectedCategoryText: {
-        color: '#fff',
-    },
-    courseList: {
-        paddingHorizontal: width * 0.04,
-    },
-    courseCard: {
-        backgroundColor: '#fff',
-        borderRadius: width * 0.03,
-        marginBottom: height * 0.025,
-        elevation: 3,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        overflow: 'hidden',
-    },
-    courseImage: {
-        width: '100%',
-        height: height * 0.2,
-    },
-    bestsellerBadge: {
-        position: 'absolute',
-        top: height * 0.015,
-        left: width * 0.025,
-        backgroundColor: '#FF6B6B',
-        paddingHorizontal: width * 0.025,
-        paddingVertical: height * 0.006,
-        borderRadius: width * 0.01,
-    },
-    bestsellerText: {
-        color: '#fff',
-        fontSize: width * 0.03,
-        fontWeight: 'bold',
-    },
-    levelBadge: {
-        position: 'absolute',
-        top: height * 0.015,
-        right: width * 0.025,
-        backgroundColor: 'rgba(0,0,0,0.7)',
-        paddingHorizontal: width * 0.025,
-        paddingVertical: height * 0.006,
-        borderRadius: width * 0.03,
-    },
-    levelText: {
-        color: '#fff',
-        fontSize: width * 0.03,
-        fontWeight: 'bold',
-    },
-    courseInfo: {
-        padding: width * 0.04,
-    },
-    courseTitle: {
-        fontSize: width * 0.04,
-        fontWeight: 'bold',
-        color: '#333',
-        marginBottom: height * 0.006,
-        lineHeight: width * 0.05,
-    },
-    instructor: {
-        fontSize: width * 0.035,
-        color: '#666',
-        marginBottom: height * 0.012,
-    },
-    courseMeta: {
-        flexDirection: 'row',
-        marginBottom: height * 0.012,
-        flexWrap: 'wrap',
-    },
-    metaItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginRight: width * 0.04,
-        marginBottom: height * 0.005,
-    },
-    metaText: {
-        fontSize: width * 0.03,
-        color: '#666',
-        marginLeft: width * 0.015,
-    },
-    courseDetails: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-    },
-    ratingContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    rating: {
-        fontSize: width * 0.035,
-        fontWeight: '500',
-        marginLeft: width * 0.01,
-        color: '#333',
-    },
-    priceContainer: {
-        alignItems: 'flex-end',
-    },
-    originalPrice: {
-        fontSize: width * 0.03,
-        color: '#999',
-        textDecorationLine: 'line-through',
-    },
-    price: {
-        fontSize: width * 0.04,
-        fontWeight: 'bold',
-        color: '#4A90E2',
-    },
-    instructorsContainer: {
-        paddingHorizontal: width * 0.04,
-    },
-    instructorCard: {
-        width: width * 0.35,
-        backgroundColor: '#fff',
-        borderRadius: width * 0.03,
-        padding: width * 0.04,
-        marginRight: width * 0.04,
-        alignItems: 'center',
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-    },
-    instructorImage: {
-        width: width * 0.18,
-        height: width * 0.18,
-        borderRadius: width * 0.09,
-        marginBottom: height * 0.012,
-    },
-    instructorName: {
-        fontSize: width * 0.035,
-        fontWeight: 'bold',
-        color: '#333',
-        marginBottom: height * 0.003,
-        textAlign: 'center',
-        lineHeight: width * 0.042,
-    },
-    instructorField: {
-        fontSize: width * 0.03,
-        color: '#4A90E2',
-        marginBottom: height * 0.006,
-        textAlign: 'center',
-    },
-    instructorStudents: {
-        fontSize: width * 0.028,
-        color: '#666',
-        textAlign: 'center',
-    },
-    testimonialsContainer: {
-        paddingHorizontal: width * 0.04,
-    },
-    testimonialCard: {
-        width: width * 0.8,
-        backgroundColor: '#fff',
-        borderRadius: width * 0.03,
-        padding: width * 0.04,
-        marginRight: width * 0.04,
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-    },
-    testimonialHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: height * 0.012,
-    },
-    testimonialAvatar: {
-        width: width * 0.1,
-        height: width * 0.1,
-        borderRadius: width * 0.05,
-        marginRight: width * 0.025,
-    },
-    testimonialInfo: {
-        flex: 1,
-    },
-    testimonialName: {
-        fontSize: width * 0.035,
-        fontWeight: 'bold',
-        color: '#333',
-        marginBottom: height * 0.003,
-    },
-    testimonialText: {
-        fontSize: width * 0.035,
-        color: '#666',
-        fontStyle: 'italic',
-        lineHeight: width * 0.045,
-    },
+  container: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    backgroundColor: 'white',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  backButton: {
+    padding: 5,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  headerIcon: {
+    padding: 5,
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    backgroundColor: 'white',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  tab: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 25,
+    marginHorizontal: 5,
+  },
+  activeTab: {
+    backgroundColor: '#007AFF',
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
+    marginRight: 6,
+  },
+  activeTabText: {
+    color: 'white',
+  },
+  tabBadge: {
+    backgroundColor: '#f0f0f0',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    minWidth: 20,
+    alignItems: 'center',
+  },
+  activeTabBadge: {
+    backgroundColor: 'rgba(255,255,255,0.3)',
+  },
+  tabBadgeText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#666',
+  },
+  activeTabBadgeText: {
+    color: 'white',
+  },
+  content: {
+    flex: 1,
+  },
+  listContainer: {
+    padding: 20,
+  },
+  courseCard: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    marginBottom: 20,
+    overflow: 'hidden',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  courseImage: {
+    width: '100%',
+    height: 150,
+    backgroundColor: '#f0f0f0',
+  },
+  completedImageContainer: {
+    position: 'relative',
+  },
+  completedOverlay: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    borderRadius: 20,
+    padding: 5,
+  },
+  wishlistImageContainer: {
+    position: 'relative',
+  },
+  bestsellerBadge: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    backgroundColor: '#FFD700',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  bestsellerText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  priceDropBadge: {
+    position: 'absolute',
+    top: 10,
+    right: 50,
+    backgroundColor: '#FF6B6B',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  priceDropText: {
+    fontSize: 9,
+    fontWeight: 'bold',
+    color: 'white',
+    marginLeft: 2,
+  },
+  removeWishlistButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    borderRadius: 20,
+    padding: 6,
+  },
+  courseContent: {
+    padding: 15,
+  },
+  courseHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  categoryBadge: {
+    backgroundColor: '#f0f0f0',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  categoryText: {
+    fontSize: 10,
+    color: '#007AFF',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  ratingText: {
+    fontSize: 12,
+    color: '#333',
+    marginLeft: 3,
+    fontWeight: '600',
+  },
+  gradeContainer: {
+    backgroundColor: '#E8F5E8',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  gradeText: {
+    fontSize: 12,
+    color: '#4CAF50',
+    fontWeight: 'bold',
+  },
+  courseTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 4,
+  },
+  courseInstructor: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 12,
+  },
+  progressSection: {
+    marginBottom: 15,
+  },
+  progressHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  progressText: {
+    fontSize: 12,
+    color: '#666',
+  },
+  progressPercent: {
+    fontSize: 12,
+    color: '#007AFF',
+    fontWeight: 'bold',
+  },
+  progressBar: {
+    height: 6,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 3,
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#007AFF',
+    borderRadius: 3,
+  },
+  nextLessonSection: {
+    backgroundColor: '#f8f9fa',
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 15,
+  },
+  nextLessonLabel: {
+    fontSize: 11,
+    color: '#666',
+    textTransform: 'uppercase',
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  nextLessonTitle: {
+    fontSize: 13,
+    color: '#333',
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  nextLessonDuration: {
+    fontSize: 11,
+    color: '#007AFF',
+  },
+  courseFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  courseInfo: {
+    flex: 1,
+  },
+  lastWatched: {
+    fontSize: 11,
+    color: '#999',
+    marginBottom: 3,
+  },
+  downloadInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  downloadText: {
+    fontSize: 11,
+    color: '#666',
+    marginLeft: 4,
+  },
+  resumeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  resumeButtonText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
+    marginLeft: 4,
+  },
+  completedInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  completedDate: {
+    fontSize: 12,
+    color: '#666',
+  },
+  courseDuration: {
+    fontSize: 12,
+    color: '#666',
+  },
+  skillsSection: {
+    marginBottom: 15,
+  },
+  skillsLabel: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 8,
+  },
+  skillsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  skillBadge: {
+    backgroundColor: '#f0f0f0',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginRight: 6,
+    marginBottom: 4,
+  },
+  skillText: {
+    fontSize: 10,
+    color: '#666',
+  },
+  completedFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  userRatingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  userRatingLabel: {
+    fontSize: 12,
+    color: '#666',
+    marginRight: 8,
+  },
+  userRating: {
+    flexDirection: 'row',
+  },
+  certificateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0f0f0',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  certificateButtonText: {
+    color: '#007AFF',
+    fontSize: 12,
+    fontWeight: '600',
+    marginLeft: 4,
+  },
+  wishlistInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  studentsCount: {
+    fontSize: 11,
+    color: '#666',
+  },
+  addedDate: {
+    fontSize: 11,
+    color: '#999',
+  },
+  priceSection: {
+    marginBottom: 15,
+  },
+  priceContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  currentPrice: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#007AFF',
+    marginRight: 8,
+  },
+  originalPrice: {
+    fontSize: 14,
+    color: '#999',
+    textDecorationLine: 'line-through',
+    marginRight: 8,
+  },
+  discountBadge: {
+    backgroundColor: '#FFE0E0',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  discountText: {
+    fontSize: 10,
+    color: '#D50000',
+  },
+  wishlistFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  moveToCartButton: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  moveToCartText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
+    marginLeft: 4,
+  },
+  buyNowButton: {
+    backgroundColor: '#D50000',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  buyNowText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
+    marginLeft: 4,
+  },
+  summaryContainer: {
+    marginTop: 12,
+    padding: 12,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 8,
+  },
+  summaryText: {
+    fontSize: 12,
+    color: '#666',
+  },
 });

@@ -1,700 +1,1075 @@
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Dimensions, Image, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+        Dimensions,
+        FlatList,
+        Image,
+        Modal,
+        ScrollView,
+        StyleSheet,
+        Text,
+        TextInput,
+        TouchableOpacity,
+        View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
-export default function Programs() {
-        const [searchQuery, setSearchQuery] = useState('');
-        const [selectedCategory, setSelectedCategory] = useState('All');
-        const [selectedProgramType, setSelectedProgramType] = useState('All');
+// Dummy Programs Data
+const allPrograms = [
+  {
+    id: '1',
+    title: 'Complete Web Development Bootcamp',
+    instructor: 'Sarah Johnson',
+    rating: 4.8,
+    ratingCount: 2847,
+    students: 12500,
+    duration: '45h',
+    level: 'Beginner',
+    price: '₹999',
+    originalPrice: '₹2999',
+    isFree: false,
+    category: 'Technology',
+    description: 'Master modern web development with HTML, CSS, JavaScript, React',
+    image: 'https://img-c.udemycdn.com/course/750x422/548278_b005_9.jpg',
+    isWishlisted: false,
+    tags: ['HTML', 'CSS', 'JavaScript', 'React']
+  },
+  {
+    id: '2',
+    title: 'UI/UX Design Masterclass',
+    instructor: 'Mike Chen',
+    rating: 4.9,
+    ratingCount: 1543,
+    students: 8900,
+    duration: '28h',
+    level: 'Intermediate',
+    price: 'Free',
+    originalPrice: null,
+    isFree: true,
+    category: 'Design',
+    description: 'Learn professional UI/UX design principles and tools',
+    image: 'https://img.freepik.com/free-vector/gradient-ui-ux-background_23-2149052117.jpg?semt=ais_hybrid&w=740&q=80',
+    isWishlisted: true,
+    tags: ['Figma', 'Adobe XD', 'Prototyping']
+  },
+  {
+    id: '3',
+    title: 'Digital Marketing Strategy',
+    instructor: 'Emma Davis',
+    rating: 4.7,
+    ratingCount: 987,
+    students: 6700,
+    duration: '18h',
+    level: 'Beginner',
+    price: '₹799',
+    originalPrice: '₹1999',
+    isFree: false,
+    category: 'Marketing',
+    description: 'Master digital marketing with SEO, SEM, and social media',
+    image: 'https://www.simplilearn.com/ice9/free_resources_article_thumb/What_is_digital_marketing.jpg',
+    isWishlisted: false,
+    tags: ['SEO', 'Google Ads', 'Social Media']
+  },
+  {
+    id: '4',
+    title: 'Python for Data Science',
+    instructor: 'Dr. Alex Morgan',
+    rating: 4.6,
+    ratingCount: 2156,
+    students: 15600,
+    duration: '52h',
+    level: 'Advanced',
+    price: '₹1299',
+    originalPrice: '₹3999',
+    isFree: false,
+    category: 'Technology',
+    description: 'Complete Python programming for data analysis and machine learning',
+    image: 'https://media.geeksforgeeks.org/wp-content/cdn-uploads/20230318230239/Python-Data-Science-Tutorial.jpg',
+    isWishlisted: false,
+    tags: ['Python', 'Pandas', 'NumPy', 'ML']
+  },
+  {
+    id: '5',
+    title: 'Mobile App Design Fundamentals',
+    instructor: 'Lisa Parker',
+    rating: 4.8,
+    ratingCount: 756,
+    students: 4200,
+    duration: '15h',
+    level: 'Beginner',
+    price: 'Free',
+    originalPrice: null,
+    isFree: true,
+    category: 'Design',
+    description: 'Learn to design beautiful mobile applications',
+    image: 'https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=1440,h=756,fit=crop,f=jpeg/YleqW8eqJrFgg956/social-share-1920x1080-3-A85EG14X87iaEK49.jpg',
+    isWishlisted: true,
+    tags: ['Mobile Design', 'iOS', 'Android']
+  },
+  {
+    id: '6',
+    title: 'Business Strategy & Leadership',
+    instructor: 'Robert Kim',
+    rating: 4.7,
+    ratingCount: 1234,
+    students: 7800,
+    duration: '32h',
+    level: 'Intermediate',
+    price: '₹1599',
+    originalPrice: '₹4999',
+    isFree: false,
+    category: 'Business',
+    description: 'Develop strategic thinking and leadership skills',
+    image: 'https://media.geeksforgeeks.org/wp-content/uploads/20240223125319/Business-Strategy-copy.webp',
+    isWishlisted: false,
+    tags: ['Leadership', 'Strategy', 'Management']
+  },
+  {
+    id: '7',
+    title: 'Graphic Design with Photoshop',
+    instructor: 'Anna Johnson',
+    rating: 4.5,
+    ratingCount: 892,
+    students: 5400,
+    duration: '22h',
+    level: 'Beginner',
+    price: '₹699',
+    originalPrice: '₹1999',
+    isFree: false,
+    category: 'Design',
+    description: 'Master Adobe Photoshop for professional graphic design',
+    image: 'https://img.freepik.com/free-vector/gradient-ui-ux-background_23-2149052117.jpg?semt=ais_hybrid&w=740&q=80',
+    isWishlisted: false,
+    tags: ['Photoshop', 'Graphics', 'Adobe']
+  },
+  {
+    id: '8',
+    title: 'Machine Learning Basics',
+    instructor: 'Dr. Sarah Smith',
+    rating: 4.9,
+    ratingCount: 1876,
+    students: 9200,
+    duration: '38h',
+    level: 'Advanced',
+    price: 'Free',
+    originalPrice: null,
+    isFree: true,
+    category: 'Technology',
+    description: 'Introduction to machine learning algorithms and applications',
+    image: 'https://media.geeksforgeeks.org/wp-content/cdn-uploads/20230318230239/Python-Data-Science-Tutorial.jpg',
+    isWishlisted: true,
+    tags: ['AI', 'ML', 'Algorithms']
+  }
+];
 
-        const categories = [
-                'All', 'Technology', 'Business', 'Data Science',
-                'AI & ML', 'Cloud Computing', 'Digital Marketing', 'Cybersecurity'
-        ];
+const categories = ['All', 'Technology', 'Design', 'Business', 'Marketing'];
+const levels = ['All', 'Beginner', 'Intermediate', 'Advanced'];
+const durations = ['All', 'Short (<10h)', 'Medium (10-30h)', 'Long (>30h)'];
+const prices = ['All', 'Free', 'Paid'];
+const sortOptions = ['Popular', 'Newest', 'Recommended', 'High Rating', 'Price: Low to High', 'Price: High to Low'];
 
-        const programTypes = [
-                { id: 'All', name: 'All Programs' },
-                { id: 'degree', name: 'Degree Programs' },
-                { id: 'certificate', name: 'Professional Certificates' },
-                { id: 'postgraduate', name: 'Postgraduate Programs' }
-        ];
+export default function ProgramsListingPage() {
+  const [programs, setPrograms] = useState(allPrograms);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isGridView, setIsGridView] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
+  const [showSortModal, setShowSortModal] = useState(false);
+  
+  // Filter states
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedLevel, setSelectedLevel] = useState('All');
+  const [selectedDuration, setSelectedDuration] = useState('All');
+  const [selectedPrice, setSelectedPrice] = useState('All');
+  const [selectedSort, setSelectedSort] = useState('Popular');
 
-        const programs = [
-                {
-                        id: 1,
-                        title: 'Master of Science in Data Science',
-                        university: 'University of Texas Austin',
-                        duration: '24 months',
-                        learningFormat: 'Online',
-                        price: '$15,000',
-                        originalPrice: '$20,000',
-                        image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=600&q=80',
-                        category: 'Data Science',
-                        programType: 'degree',
-                        rating: 4.8,
-                        students: 1250,
-                        features: ['University Certificate', 'Career Support', '1:1 Mentorship']
-                },
-                {
-                        id: 2,
-                        title: 'Post Graduate Program in Cloud Computing',
-                        university: 'Caltech CTME',
-                        duration: '12 months',
-                        learningFormat: 'Online',
-                        price: '$4,999',
-                        originalPrice: '$6,999',
-                        image: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=600&q=80',
-                        category: 'Cloud Computing',
-                        programType: 'postgraduate',
-                        rating: 4.7,
-                        students: 980,
-                        features: ['Caltech Certificate', 'Masterclasses', 'Job Assistance']
-                },
-                {
-                        id: 3,
-                        title: 'Professional Certificate in Digital Marketing',
-                        university: 'Purdue University',
-                        duration: '9 months',
-                        learningFormat: 'Online',
-                        price: '$3,999',
-                        originalPrice: '$5,499',
-                        image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=600&q=80',
-                        category: 'Digital Marketing',
-                        programType: 'certificate',
-                        rating: 4.6,
-                        students: 2100,
-                        features: ['Purdue Certificate', 'Industry Projects', 'Resume Building']
-                },
-                {
-                        id: 4,
-                        title: 'Master of Business Administration',
-                        university: 'Deakin Business School',
-                        duration: '24 months',
-                        learningFormat: 'Online',
-                        price: '$18,000',
-                        originalPrice: '$24,000',
-                        image: 'https://images.unsplash.com/photo-1491438590914-bc09fcaaf77a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=600&q=80',
-                        category: 'Business',
-                        programType: 'degree',
-                        rating: 4.9,
-                        students: 850,
-                        features: ['Deakin Degree', 'Global Alumni Status', 'Leadership Training']
-                },
-                {
-                        id: 5,
-                        title: 'Advanced Certification in AI & Machine Learning',
-                        university: 'University of Texas Austin',
-                        duration: '12 months',
-                        learningFormat: 'Online',
-                        price: '$4,500',
-                        originalPrice: '$6,200',
-                        image: 'https://images.unsplash.com/photo-1555949963-aa79dcee981c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=600&q=80',
-                        category: 'AI & ML',
-                        programType: 'certificate',
-                        rating: 4.8,
-                        students: 3200,
-                        features: ['UT Austin Certificate', 'Capstone Project', 'Career Services']
-                },
-                {
-                        id: 6,
-                        title: 'Post Graduate Program in Cybersecurity',
-                        university: 'MIT Schwarzman College',
-                        duration: '8 months',
-                        learningFormat: 'Online',
-                        price: '$5,500',
-                        originalPrice: '$7,800',
-                        image: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=600&q=80',
-                        category: 'Cybersecurity',
-                        programType: 'postgraduate',
-                        rating: 4.7,
-                        students: 1450,
-                        features: ['MIT Certificate', 'Hands-on Labs', 'Industry Mentors']
-                },
-        ];
+  // Filter and search logic
+  const getFilteredPrograms = () => {
+    let filtered = allPrograms.filter(program => {
+      // Search filter
+      const matchesSearch = program.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          program.instructor.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          program.description.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      // Category filter
+      const matchesCategory = selectedCategory === 'All' || program.category === selectedCategory;
+      
+      // Level filter
+      const matchesLevel = selectedLevel === 'All' || program.level === selectedLevel;
+      
+      // Duration filter
+      const matchesDuration = selectedDuration === 'All' || 
+        (selectedDuration === 'Short (<10h)' && parseInt(program.duration) < 10) ||
+        (selectedDuration === 'Medium (10-30h)' && parseInt(program.duration) >= 10 && parseInt(program.duration) <= 30) ||
+        (selectedDuration === 'Long (>30h)' && parseInt(program.duration) > 30);
+      
+      // Price filter
+      const matchesPrice = selectedPrice === 'All' || 
+        (selectedPrice === 'Free' && program.isFree) ||
+        (selectedPrice === 'Paid' && !program.isFree);
+      
+      return matchesSearch && matchesCategory && matchesLevel && matchesDuration && matchesPrice;
+    });
 
-        const filteredPrograms = programs.filter(program => {
-                const categoryMatch = selectedCategory === 'All' || program.category === selectedCategory;
-                const typeMatch = selectedProgramType === 'All' || program.programType === selectedProgramType;
-                const searchMatch = searchQuery === '' ||
-                        program.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        program.university.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        program.category.toLowerCase().includes(searchQuery.toLowerCase());
-                return categoryMatch && typeMatch && searchMatch;
+    // Sort logic
+    switch (selectedSort) {
+      case 'High Rating':
+        filtered.sort((a, b) => b.rating - a.rating);
+        break;
+      case 'Popular':
+        filtered.sort((a, b) => b.students - a.students);
+        break;
+      case 'Price: Low to High':
+        filtered.sort((a, b) => {
+          if (a.isFree && !b.isFree) return -1;
+          if (!a.isFree && b.isFree) return 1;
+          if (a.isFree && b.isFree) return 0;
+          return parseInt(a.price.replace('₹', '')) - parseInt(b.price.replace('₹', ''));
         });
+        break;
+      case 'Price: High to Low':
+        filtered.sort((a, b) => {
+          if (a.isFree && !b.isFree) return 1;
+          if (!a.isFree && b.isFree) return -1;
+          if (a.isFree && b.isFree) return 0;
+          return parseInt(b.price.replace('₹', '')) - parseInt(a.price.replace('₹', ''));
+        });
+        break;
+    }
 
-        return (
-                <SafeAreaView style={styles.container}>
-                        {/* Header */}
-                        <View style={styles.header}>
-                                <View style={styles.headerText}>
-                                        <Text style={styles.greeting}>Hello, Future Graduate!</Text>
-                                        <Text style={styles.title}>Advance Your Career with Top Programs</Text>
-                                </View>
-                                <TouchableOpacity style={styles.profileButton}>
-                                        <Ionicons name="person-outline" size={screenWidth * 0.06} color="#333" />
-                                </TouchableOpacity>
-                        </View>
+    return filtered;
+  };
 
-                        <ScrollView
-                                showsVerticalScrollIndicator={false}
-                                contentContainerStyle={styles.scrollContent}
-                        >
-                                {/* Search Bar */}
-                                <View style={styles.searchContainer}>
-                                        <Ionicons name="search-outline" size={screenWidth * 0.05} color="#666" style={styles.searchIcon} />
-                                        <TextInput
-                                                style={styles.searchInput}
-                                                placeholder="Search programs, universities, or categories..."
-                                                value={searchQuery}
-                                                onChangeText={setSearchQuery}
-                                                placeholderTextColor="#999"
-                                        />
-                                        <TouchableOpacity style={styles.filterButton}>
-                                                <Ionicons name="options-outline" size={screenWidth * 0.05} color="#fff" />
-                                        </TouchableOpacity>
-                                </View>
+  const toggleWishlist = (programId) => {
+    setPrograms(prevPrograms =>
+      prevPrograms.map(program =>
+        program.id === programId
+          ? { ...program, isWishlisted: !program.isWishlisted }
+          : program
+      )
+    );
+  };
 
-                                {/* Program Types */}
-                                <View style={styles.section}>
-                                        <Text style={styles.sectionTitle}>Program Types</Text>
-                                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.programTypesContainer}>
-                                                {programTypes.map((type) => (
-                                                        <TouchableOpacity
-                                                                key={type.id}
-                                                                style={[
-                                                                        styles.programTypeItem,
-                                                                        selectedProgramType === type.id && styles.selectedProgramType
-                                                                ]}
-                                                                onPress={() => setSelectedProgramType(type.id)}
-                                                        >
-                                                                <Text style={[
-                                                                        styles.programTypeText,
-                                                                        selectedProgramType === type.id && styles.selectedProgramTypeText
-                                                                ]}>
-                                                                        {type.name}
-                                                                </Text>
-                                                        </TouchableOpacity>
-                                                ))}
-                                        </ScrollView>
-                                </View>
+  const clearAllFilters = () => {
+    setSelectedCategory('All');
+    setSelectedLevel('All');
+    setSelectedDuration('All');
+    setSelectedPrice('All');
+    setSearchQuery('');
+  };
 
-                                {/* Categories */}
-                                <View style={styles.section}>
-                                        <Text style={styles.sectionTitle}>Browse by Category</Text>
-                                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesContainer}>
-                                                {categories.map((category) => (
-                                                        <TouchableOpacity
-                                                                key={category}
-                                                                style={[
-                                                                        styles.categoryItem,
-                                                                        selectedCategory === category && styles.selectedCategory
-                                                                ]}
-                                                                onPress={() => setSelectedCategory(category)}
-                                                        >
-                                                                <Text style={[
-                                                                        styles.categoryText,
-                                                                        selectedCategory === category && styles.selectedCategoryText
-                                                                ]}>
-                                                                        {category}
-                                                                </Text>
-                                                        </TouchableOpacity>
-                                                ))}
-                                        </ScrollView>
-                                </View>
+  const getActiveFilterCount = () => {
+    let count = 0;
+    if (selectedCategory !== 'All') count++;
+    if (selectedLevel !== 'All') count++;
+    if (selectedDuration !== 'All') count++;
+    if (selectedPrice !== 'All') count++;
+    return count;
+  };
 
-                                {/* Featured Programs */}
-                                <View style={styles.section}>
-                                        <View style={styles.sectionHeader}>
-                                                <Text style={styles.sectionTitle}>Featured Programs</Text>
-                                                <TouchableOpacity>
-                                                        <Text style={styles.seeAll}>See All</Text>
-                                                </TouchableOpacity>
-                                        </View>
+  const renderProgramCard = ({ item, index }) => {
+    if (isGridView) {
+      return (
+        <TouchableOpacity 
+          style={styles.gridCard}
+          onPress={() => router.push(`/course/${item.id}`)}
+        >
+          <View style={styles.imageContainer}>
+            <Image source={{ uri: item.image }} style={styles.gridImage} />
+            <TouchableOpacity 
+              style={styles.wishlistButton}
+              onPress={() => toggleWishlist(item.id)}
+            >
+              <Ionicons 
+                name={item.isWishlisted ? 'heart' : 'heart-outline'} 
+                size={20} 
+                color={item.isWishlisted ? '#FF6B6B' : '#666'} 
+              />
+            </TouchableOpacity>
+            {item.isFree && (
+              <View style={styles.freeBadge}>
+                <Text style={styles.freeBadgeText}>FREE</Text>
+              </View>
+            )}
+          </View>
+          
+          <View style={styles.gridCardContent}>
+            <Text style={styles.gridTitle} numberOfLines={2}>{item.title}</Text>
+            <Text style={styles.gridInstructor}>{item.instructor}</Text>
+            
+            <View style={styles.gridMetrics}>
+              <View style={styles.rating}>
+                <Ionicons name="star" size={12} color="#FFD700" />
+                <Text style={styles.ratingText}>{item.rating}</Text>
+                <Text style={styles.ratingCount}>({item.ratingCount})</Text>
+              </View>
+            </View>
+            
+            <View style={styles.gridFooter}>
+              <Text style={styles.duration}>{item.duration} • {item.level}</Text>
+              <Text style={styles.gridPrice}>{item.price}</Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+      );
+    } else {
+      return (
+        <TouchableOpacity 
+          style={styles.listCard}
+          onPress={() => router.push(`/course/${item.id}`)}
+        >
+          <Image source={{ uri: item.image }} style={styles.listImage} />
+          
+          <View style={styles.listContent}>
+            <View style={styles.listHeader}>
+              <Text style={styles.listTitle} numberOfLines={2}>{item.title}</Text>
+              <TouchableOpacity 
+                style={styles.wishlistButtonList}
+                onPress={() => toggleWishlist(item.id)}
+              >
+                <Ionicons 
+                  name={item.isWishlisted ? 'heart' : 'heart-outline'} 
+                  size={20} 
+                  color={item.isWishlisted ? '#FF6B6B' : '#666'} 
+                />
+              </TouchableOpacity>
+            </View>
+            
+            <Text style={styles.listInstructor}>{item.instructor}</Text>
+            <Text style={styles.listDescription} numberOfLines={2}>{item.description}</Text>
+            
+            <View style={styles.listMetrics}>
+              <View style={styles.rating}>
+                <Ionicons name="star" size={12} color="#FFD700" />
+                <Text style={styles.ratingText}>{item.rating}</Text>
+                <Text style={styles.ratingCount}>({item.ratingCount})</Text>
+              </View>
+              <Text style={styles.students}>{item.students.toLocaleString()} students</Text>
+            </View>
+            
+            <View style={styles.listFooter}>
+              <View style={styles.listMetaInfo}>
+                <Text style={styles.duration}>{item.duration}</Text>
+                <View style={styles.levelBadge}>
+                  <Text style={styles.levelText}>{item.level}</Text>
+                </View>
+                {item.isFree && (
+                  <View style={styles.freeTag}>
+                    <Text style={styles.freeTagText}>FREE</Text>
+                  </View>
+                )}
+              </View>
+              <View style={styles.priceContainer}>
+                {item.originalPrice && (
+                  <Text style={styles.originalPrice}>{item.originalPrice}</Text>
+                )}
+                <Text style={styles.listPrice}>{item.price}</Text>
+              </View>
+            </View>
+          </View>
+        </TouchableOpacity>
+      );
+    }
+  };
 
-                                        <View style={styles.programList}>
-                                                {filteredPrograms.map((program) => (
-                                                        <TouchableOpacity key={program.id} style={styles.programCard}>
-                                                                <Image source={{ uri: program.image }} style={styles.programImage} />
-                                                                <View style={styles.universityBadge}>
-                                                                        <Text style={styles.universityText}>{program.university.split(' ')[0]}</Text>
-                                                                </View>
-                                                                <View style={styles.programInfo}>
-                                                                        <Text style={styles.programTitle} numberOfLines={2}>{program.title}</Text>
-                                                                        <Text style={styles.university} numberOfLines={1}>by {program.university}</Text>
+  const filteredPrograms = getFilteredPrograms();
 
-                                                                        <View style={styles.programMeta}>
-                                                                                <View style={styles.metaItem}>
-                                                                                        <Ionicons name="time-outline" size={screenWidth * 0.035} color="#666" />
-                                                                                        <Text style={styles.metaText}>{program.duration}</Text>
-                                                                                </View>
-                                                                                <View style={styles.metaItem}>
-                                                                                        <Ionicons name="desktop-outline" size={screenWidth * 0.035} color="#666" />
-                                                                                        <Text style={styles.metaText}>{program.learningFormat}</Text>
-                                                                                </View>
-                                                                        </View>
+  return (
+    <SafeAreaView style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        
+        <Text style={styles.headerTitle}>Explore Programs</Text>
+        <TouchableOpacity onPress={() => setIsGridView(!isGridView)}>
+          <Ionicons 
+            name={isGridView ? 'list' : 'grid'} 
+            size={24} 
+            color="#333" 
+          />
+        </TouchableOpacity>
+      </View>
 
-                                                                        <View style={styles.featuresContainer}>
-                                                                                {program.features.slice(0, 3).map((feature, index) => (
-                                                                                        <View key={index} style={styles.featurePill}>
-                                                                                                <Text style={styles.featureText}>{feature}</Text>
-                                                                                        </View>
-                                                                                ))}
-                                                                        </View>
+      {/* Search Bar */}
+      <View style={styles.searchContainer}>
+        <Ionicons name="search" size={20} color="#999" style={styles.searchIcon} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search programs, instructors..."
+          placeholderTextColor="#999"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity onPress={() => setSearchQuery('')}>
+            <Ionicons name="close-circle" size={20} color="#999" />
+          </TouchableOpacity>
+        )}
+      </View>
 
-                                                                        <View style={styles.programDetails}>
-                                                                                <View style={styles.ratingContainer}>
-                                                                                        <Ionicons name="star" size={screenWidth * 0.035} color="#FFD700" />
-                                                                                        <Text style={styles.rating}>{program.rating}</Text>
-                                                                                        <Text style={styles.students}>({program.students.toLocaleString()}+)</Text>
-                                                                                </View>
-                                                                                <View style={styles.priceContainer}>
-                                                                                        <Text style={styles.originalPrice}>{program.originalPrice}</Text>
-                                                                                        <Text style={styles.price}>{program.price}</Text>
-                                                                                </View>
-                                                                        </View>
-                                                                </View>
-                                                        </TouchableOpacity>
-                                                ))}
-                                        </View>
-                                </View>
+      {/* Filters & Sort Bar */}
+      <View style={styles.filterBar}>
+        <TouchableOpacity 
+          style={[styles.filterButton, getActiveFilterCount() > 0 && styles.filterButtonActive]}
+          onPress={() => setShowFilters(true)}
+        >
+          <Ionicons name="filter" size={16} color={getActiveFilterCount() > 0 ? 'white' : '#333'} />
+          <Text style={[styles.filterButtonText, getActiveFilterCount() > 0 && styles.filterButtonTextActive]}>
+            Filters {getActiveFilterCount() > 0 && `(${getActiveFilterCount()})`}
+          </Text>
+        </TouchableOpacity>
 
-                                {/* University Partners */}
-                                <View style={styles.section}>
-                                        <View style={styles.sectionHeader}>
-                                                <Text style={styles.sectionTitle}>Our University Partners</Text>
-                                                <TouchableOpacity>
-                                                        <Text style={styles.seeAll}>See All</Text>
-                                                </TouchableOpacity>
-                                        </View>
+        <TouchableOpacity 
+          style={styles.sortButton}
+          onPress={() => setShowSortModal(true)}
+        >
+          <Ionicons name="swap-vertical" size={16} color="#333" />
+          <Text style={styles.sortButtonText}>{selectedSort}</Text>
+        </TouchableOpacity>
+      </View>
 
-                                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.universitiesContainer}>
-                                                {[
-                                                        { id: 1, name: 'University of Texas', logo: 'https://via.placeholder.com/80x80/4A90E2/FFFFFF?text=UT', programs: 12 },
-                                                        { id: 2, name: 'Purdue University', logo: 'https://via.placeholder.com/80x80/FF6B6B/FFFFFF?text=PU', programs: 8 },
-                                                        { id: 3, name: 'Caltech', logo: 'https://via.placeholder.com/80x80/50C878/FFFFFF?text=CT', programs: 6 },
-                                                        { id: 4, name: 'Deakin University', logo: 'https://via.placeholder.com/80x80/9C27B0/FFFFFF?text=DU', programs: 10 },
-                                                        { id: 5, name: 'MIT', logo: 'https://via.placeholder.com/80x80/FF9800/FFFFFF?text=MIT', programs: 5 },
-                                                ].map((university) => (
-                                                        <View key={university.id} style={styles.universityCard}>
-                                                                <Image source={{ uri: university.logo }} style={styles.universityLogo} />
-                                                                <Text style={styles.universityName} numberOfLines={2}>{university.name}</Text>
-                                                                <Text style={styles.universityPrograms}>{university.programs}+ Programs</Text>
-                                                        </View>
-                                                ))}
-                                        </ScrollView>
-                                </View>
+      {/* Results Count */}
+      <View style={styles.resultsHeader}>
+        <Text style={styles.resultsText}>
+          {filteredPrograms.length} programs found
+        </Text>
+        {getActiveFilterCount() > 0 && (
+          <TouchableOpacity onPress={clearAllFilters}>
+            <Text style={styles.clearFilters}>Clear all</Text>
+          </TouchableOpacity>
+        )}
+      </View>
 
-                                {/* Success Stories */}
-                                <View style={[styles.section, styles.lastSection]}>
-                                        <View style={styles.sectionHeader}>
-                                                <Text style={styles.sectionTitle}>Success Stories</Text>
-                                                <TouchableOpacity>
-                                                        <Text style={styles.seeAll}>See All</Text>
-                                                </TouchableOpacity>
-                                        </View>
+      {/* Programs List */}
+      <FlatList
+        data={filteredPrograms}
+        renderItem={renderProgramCard}
+        keyExtractor={(item) => item.id}
+        numColumns={isGridView ? 2 : 1}
+        key={isGridView ? 'grid' : 'list'}
+        contentContainerStyle={styles.programsList}
+        showsVerticalScrollIndicator={false}
+      />
 
-                                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.storiesContainer}>
-                                                {[
-                                                        {
-                                                                id: 1,
-                                                                name: 'Sarah Johnson',
-                                                                role: 'Data Scientist at Google',
-                                                                story: 'The MS in Data Science program completely transformed my career trajectory. Within 3 months of completion, I received multiple job offers.',
-                                                                avatar: 'https://images.unsplash.com/photo-1554151228-14d9def656e4?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=200&q=80',
-                                                                program: 'MS in Data Science'
-                                                        },
-                                                        {
-                                                                id: 2,
-                                                                name: 'Michael Chen',
-                                                                role: 'Cloud Architect at AWS',
-                                                                story: 'The Caltech Cloud Computing program gave me the hands-on experience I needed to advance from sysadmin to cloud architect.',
-                                                                avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=200&q=80',
-                                                                program: 'PGP in Cloud Computing'
-                                                        },
-                                                        {
-                                                                id: 3,
-                                                                name: 'Emma Rodriguez',
-                                                                role: 'Marketing Director',
-                                                                story: 'The Digital Marketing certificate helped me transition from traditional marketing to digital. My salary increased by 65% after completion.',
-                                                                avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=200&q=80',
-                                                                program: 'Digital Marketing Certificate'
-                                                        },
-                                                ].map((story) => (
-                                                        <View key={story.id} style={styles.storyCard}>
-                                                                <View style={styles.storyContent}>
-                                                                        <Text style={styles.storyText}>"{story.story}"</Text>
-                                                                        <View style={styles.storyAuthor}>
-                                                                                <Image source={{ uri: story.avatar }} style={styles.storyAvatar} />
-                                                                                <View style={styles.storyAuthorInfo}>
-                                                                                        <Text style={styles.storyName} numberOfLines={1}>{story.name}</Text>
-                                                                                        <Text style={styles.storyRole} numberOfLines={1}>{story.role}</Text>
-                                                                                        <Text style={styles.storyProgram} numberOfLines={1}>{story.program}</Text>
-                                                                                </View>
-                                                                        </View>
-                                                                </View>
-                                                        </View>
-                                                ))}
-                                        </ScrollView>
-                                </View>
-                        </ScrollView>
-                </SafeAreaView>
-        );
+      {/* Filter Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={showFilters}
+        onRequestClose={() => setShowFilters(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.filterModal}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Filters</Text>
+              <TouchableOpacity onPress={() => setShowFilters(false)}>
+                <Ionicons name="close" size={24} color="#333" />
+              </TouchableOpacity>
+            </View>
+            
+            <ScrollView style={styles.filterContent}>
+              {/* Category Filter */}
+              <View style={styles.filterSection}>
+                <Text style={styles.filterSectionTitle}>Category</Text>
+                <View style={styles.filterOptions}>
+                  {categories.map((category) => (
+                    <TouchableOpacity
+                      key={category}
+                      style={[
+                        styles.filterOption,
+                        selectedCategory === category && styles.filterOptionActive
+                      ]}
+                      onPress={() => setSelectedCategory(category)}
+                    >
+                      <Text style={[
+                        styles.filterOptionText,
+                        selectedCategory === category && styles.filterOptionTextActive
+                      ]}>
+                        {category}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              {/* Level Filter */}
+              <View style={styles.filterSection}>
+                <Text style={styles.filterSectionTitle}>Level</Text>
+                <View style={styles.filterOptions}>
+                  {levels.map((level) => (
+                    <TouchableOpacity
+                      key={level}
+                      style={[
+                        styles.filterOption,
+                        selectedLevel === level && styles.filterOptionActive
+                      ]}
+                      onPress={() => setSelectedLevel(level)}
+                    >
+                      <Text style={[
+                        styles.filterOptionText,
+                        selectedLevel === level && styles.filterOptionTextActive
+                      ]}>
+                        {level}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              {/* Duration Filter */}
+              <View style={styles.filterSection}>
+                <Text style={styles.filterSectionTitle}>Duration</Text>
+                <View style={styles.filterOptions}>
+                  {durations.map((duration) => (
+                    <TouchableOpacity
+                      key={duration}
+                      style={[
+                        styles.filterOption,
+                        selectedDuration === duration && styles.filterOptionActive
+                      ]}
+                      onPress={() => setSelectedDuration(duration)}
+                    >
+                      <Text style={[
+                        styles.filterOptionText,
+                        selectedDuration === duration && styles.filterOptionTextActive
+                      ]}>
+                        {duration}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              {/* Price Filter */}
+              <View style={styles.filterSection}>
+                <Text style={styles.filterSectionTitle}>Price</Text>
+                <View style={styles.filterOptions}>
+                  {prices.map((price) => (
+                    <TouchableOpacity
+                      key={price}
+                      style={[
+                        styles.filterOption,
+                        selectedPrice === price && styles.filterOptionActive
+                      ]}
+                      onPress={() => setSelectedPrice(price)}
+                    >
+                      <Text style={[
+                        styles.filterOptionText,
+                        selectedPrice === price && styles.filterOptionTextActive
+                      ]}>
+                        {price}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            </ScrollView>
+
+            <View style={styles.modalFooter}>
+              <TouchableOpacity 
+                style={styles.clearButton}
+                onPress={clearAllFilters}
+              >
+                <Text style={styles.clearButtonText}>Clear All</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.applyButton}
+                onPress={() => setShowFilters(false)}
+              >
+                <Text style={styles.applyButtonText}>Apply Filters</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Sort Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={showSortModal}
+        onRequestClose={() => setShowSortModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.sortModal}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Sort By</Text>
+              <TouchableOpacity onPress={() => setShowSortModal(false)}>
+                <Ionicons name="close" size={24} color="#333" />
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.sortOptions}>
+              {sortOptions.map((option) => (
+                <TouchableOpacity
+                  key={option}
+                  style={[
+                    styles.sortOption,
+                    selectedSort === option && styles.sortOptionActive
+                  ]}
+                  onPress={() => {
+                    setSelectedSort(option);
+                    setShowSortModal(false);
+                  }}
+                >
+                  <Text style={[
+                    styles.sortOptionText,
+                    selectedSort === option && styles.sortOptionTextActive
+                  ]}>
+                    {option}
+                  </Text>
+                  {selectedSort === option && (
+                    <Ionicons name="checkmark" size={20} color="#4ECDC4" />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
-        container: {
-                flex: 1,
-                backgroundColor: '#f8f9fa',
-        },
-        scrollContent: {
-                paddingBottom: screenHeight * 0.03,
-        },
-        header: {
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                paddingHorizontal: screenWidth * 0.05,
-                paddingTop: screenHeight * 0.07,
-                paddingBottom: screenHeight * 0.02,
-                backgroundColor: '#fff',
-                elevation: 2,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 4,
-        },
-        headerText: {
-                flex: 1,
-        },
-        greeting: {
-                fontSize: screenWidth * 0.035,
-                color: '#666',
-        },
-        title: {
-                fontSize: screenWidth * 0.055,
-                fontWeight: 'bold',
-                color: '#333',
-                marginTop: 2,
-        },
-        profileButton: {
-                width: screenWidth * 0.1,
-                height: screenWidth * 0.1,
-                borderRadius: screenWidth * 0.05,
-                backgroundColor: '#f0f0f0',
-                justifyContent: 'center',
-                alignItems: 'center',
-        },
-        searchContainer: {
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: '#fff',
-                marginHorizontal: screenWidth * 0.05,
-                marginVertical: screenHeight * 0.025,
-                paddingHorizontal: screenWidth * 0.04,
-                paddingVertical: screenHeight * 0.015,
-                borderRadius: 12,
-                elevation: 3,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 4,
-        },
-        searchIcon: {
-                marginRight: screenWidth * 0.025,
-        },
-        searchInput: {
-                flex: 1,
-                fontSize: screenWidth * 0.04,
-                color: '#333',
-        },
-        filterButton: {
-                width: screenWidth * 0.09,
-                height: screenWidth * 0.09,
-                borderRadius: 10,
-                backgroundColor: '#4A90E2',
-                justifyContent: 'center',
-                alignItems: 'center',
-        },
-        section: {
-                marginBottom: screenHeight * 0.03,
-        },
-        lastSection: {
-                marginBottom: 0,
-        },
-        sectionHeader: {
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                paddingHorizontal: screenWidth * 0.05,
-                marginBottom: screenHeight * 0.02,
-        },
-        sectionTitle: {
-                fontSize: screenWidth * 0.045,
-                fontWeight: 'bold',
-                color: '#333',
-        },
-        seeAll: {
-                fontSize: screenWidth * 0.035,
-                color: '#4A90E2',
-                fontWeight: '500',
-        },
-        programTypesContainer: {
-                paddingHorizontal: screenWidth * 0.04,
-                marginBottom: screenHeight * 0.01,
-        },
-        programTypeItem: {
-                paddingHorizontal: screenWidth * 0.05,
-                paddingVertical: screenHeight * 0.015,
-                marginRight: screenWidth * 0.025,
-                backgroundColor: '#fff',
-                borderRadius: 8,
-                elevation: 2,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.1,
-                shadowRadius: 2,
-                minWidth: screenWidth * 0.35,
-                alignItems: 'center',
-        },
-        selectedProgramType: {
-                backgroundColor: '#4A90E2',
-        },
-        programTypeText: {
-                fontSize: screenWidth * 0.035,
-                color: '#666',
-                fontWeight: '500',
-                textAlign: 'center',
-        },
-        selectedProgramTypeText: {
-                color: '#fff',
-        },
-        categoriesContainer: {
-                paddingHorizontal: screenWidth * 0.04,
-                marginBottom: screenHeight * 0.01,
-        },
-        categoryItem: {
-                paddingHorizontal: screenWidth * 0.05,
-                paddingVertical: screenHeight * 0.012,
-                marginRight: screenWidth * 0.025,
-                backgroundColor: '#fff',
-                borderRadius: 20,
-                elevation: 2,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.1,
-                shadowRadius: 2,
-        },
-        selectedCategory: {
-                backgroundColor: '#4A90E2',
-        },
-        categoryText: {
-                fontSize: screenWidth * 0.035,
-                color: '#666',
-                fontWeight: '500',
-        },
-        selectedCategoryText: {
-                color: '#fff',
-        },
-        programList: {
-                paddingHorizontal: screenWidth * 0.04,
-        },
-        programCard: {
-                backgroundColor: '#fff',
-                borderRadius: 12,
-                marginBottom: screenHeight * 0.025,
-                elevation: 3,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 4,
-                overflow: 'hidden',
-        },
-        programImage: {
-                width: '100%',
-                height: screenHeight * 0.2,
-        },
-        universityBadge: {
-                position: 'absolute',
-                top: screenHeight * 0.015,
-                left: screenWidth * 0.025,
-                backgroundColor: 'rgba(0,0,0,0.7)',
-                paddingHorizontal: screenWidth * 0.025,
-                paddingVertical: screenHeight * 0.008,
-                borderRadius: 4,
-        },
-        universityText: {
-                color: '#fff',
-                fontSize: screenWidth * 0.03,
-                fontWeight: 'bold',
-        },
-        programInfo: {
-                padding: screenWidth * 0.04,
-        },
-        programTitle: {
-                fontSize: screenWidth * 0.04,
-                fontWeight: 'bold',
-                color: '#333',
-                marginBottom: screenHeight * 0.008,
-                lineHeight: screenWidth * 0.05,
-        },
-        university: {
-                fontSize: screenWidth * 0.035,
-                color: '#666',
-                marginBottom: screenHeight * 0.015,
-        },
-        programMeta: {
-                flexDirection: 'row',
-                marginBottom: screenHeight * 0.015,
-        },
-        metaItem: {
-                flexDirection: 'row',
-                alignItems: 'center',
-                marginRight: screenWidth * 0.04,
-        },
-        metaText: {
-                fontSize: screenWidth * 0.03,
-                color: '#666',
-                marginLeft: screenWidth * 0.015,
-        },
-        featuresContainer: {
-                flexDirection: 'row',
-                flexWrap: 'wrap',
-                marginBottom: screenHeight * 0.015,
-        },
-        featurePill: {
-                backgroundColor: '#f0f7ff',
-                paddingHorizontal: screenWidth * 0.025,
-                paddingVertical: screenHeight * 0.008,
-                borderRadius: 12,
-                marginRight: screenWidth * 0.02,
-                marginBottom: screenHeight * 0.01,
-        },
-        featureText: {
-                fontSize: screenWidth * 0.03,
-                color: '#4A90E2',
-        },
-        programDetails: {
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-        },
-        ratingContainer: {
-                flexDirection: 'row',
-                alignItems: 'center',
-                flex: 1,
-        },
-        rating: {
-                fontSize: screenWidth * 0.035,
-                fontWeight: '500',
-                marginLeft: screenWidth * 0.01,
-                color: '#333',
-        },
-        students: {
-                fontSize: screenWidth * 0.03,
-                color: '#666',
-                marginLeft: screenWidth * 0.01,
-        },
-        priceContainer: {
-                alignItems: 'flex-end',
-        },
-        originalPrice: {
-                fontSize: screenWidth * 0.03,
-                color: '#999',
-                textDecorationLine: 'line-through',
-        },
-        price: {
-                fontSize: screenWidth * 0.045,
-                fontWeight: 'bold',
-                color: '#4A90E2',
-        },
-        universitiesContainer: {
-                paddingHorizontal: screenWidth * 0.04,
-        },
-        universityCard: {
-                width: screenWidth * 0.35,
-                backgroundColor: '#fff',
-                borderRadius: 12,
-                padding: screenWidth * 0.04,
-                marginRight: screenWidth * 0.04,
-                alignItems: 'center',
-                elevation: 2,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.1,
-                shadowRadius: 2,
-        },
-        universityLogo: {
-                width: screenWidth * 0.2,
-                height: screenWidth * 0.2,
-                borderRadius: screenWidth * 0.1,
-                marginBottom: screenHeight * 0.015,
-        },
-        universityName: {
-                fontSize: screenWidth * 0.035,
-                fontWeight: 'bold',
-                color: '#333',
-                marginBottom: screenHeight * 0.005,
-                textAlign: 'center',
-        },
-        universityPrograms: {
-                fontSize: screenWidth * 0.028,
-                color: '#666',
-                textAlign: 'center',
-        },
-        storiesContainer: {
-                paddingHorizontal: screenWidth * 0.04,
-        },
-        storyCard: {
-                width: screenWidth * 0.8,
-                backgroundColor: '#fff',
-                borderRadius: 12,
-                padding: screenWidth * 0.04,
-                marginRight: screenWidth * 0.04,
-                elevation: 2,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.1,
-                shadowRadius: 2,
-                minHeight: screenHeight * 0.2,
-        },
-        storyContent: {
-                flex: 1,
-        },
-        storyText: {
-                fontSize: screenWidth * 0.035,
-                color: '#666',
-                fontStyle: 'italic',
-                marginBottom: screenHeight * 0.02,
-                lineHeight: screenWidth * 0.05,
-        },
-        storyAuthor: {
-                flexDirection: 'row',
-                alignItems: 'center',
-        },
-        storyAvatar: {
-                width: screenWidth * 0.125,
-                height: screenWidth * 0.125,
-                borderRadius: screenWidth * 0.0625,
-                marginRight: screenWidth * 0.025,
-        },
-        storyAuthorInfo: {
-                flex: 1,
-        },
-        storyName: {
-                fontSize: screenWidth * 0.035,
-                fontWeight: 'bold',
-                color: '#333',
-        },
-        storyRole: {
-                fontSize: screenWidth * 0.03,
-                color: '#666',
-                marginTop: screenHeight * 0.002,
-        },
-        storyProgram: {
-                fontSize: screenWidth * 0.03,
-                color: '#4A90E2',
-                marginTop: screenHeight * 0.002,
-        },
+  container: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    backgroundColor: 'white',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    marginHorizontal: 20,
+    marginVertical: 15,
+    borderRadius: 12,
+    paddingHorizontal: 15,
+    height: 50,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  searchIcon: {
+    marginRight: 10,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
+  },
+  filterBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    marginBottom: 10,
+  },
+  filterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  filterButtonActive: {
+    backgroundColor: '#4ECDC4',
+    borderColor: '#4ECDC4',
+  },
+  filterButtonText: {
+    marginLeft: 5,
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
+  },
+  filterButtonTextActive: {
+    color: 'white',
+  },
+  sortButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  sortButtonText: {
+    marginLeft: 5,
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
+  },
+  resultsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginBottom: 10,
+  },
+  resultsText: {
+    fontSize: 14,
+    color: '#666',
+  },
+  clearFilters: {
+    fontSize: 14,
+    color: '#4ECDC4',
+    fontWeight: '600',
+  },
+  programsList: {
+    paddingHorizontal: 10,
+  },
+  
+  // Grid View Styles
+  gridCard: {
+    flex: 1,
+    backgroundColor: 'white',
+    marginHorizontal: 10,
+    marginBottom: 20,
+    borderRadius: 12,
+    overflow: 'hidden',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  imageContainer: {
+    position: 'relative',
+  },
+  gridImage: {
+    width: '100%',
+    height: 120,
+    backgroundColor: '#f0f0f0',
+  },
+  wishlistButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: 'white',
+    padding: 5,
+    borderRadius: 15,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+  },
+  freeBadge: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  freeBadgeText: {
+    color: 'white',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  gridCardContent: {
+    padding: 12,
+  },
+  gridTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 4,
+    lineHeight: 18,
+  },
+  gridInstructor: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 8,
+  },
+  gridMetrics: {
+    marginBottom: 8,
+  },
+  rating: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  ratingText: {
+    fontSize: 12,
+    color: '#333',
+    marginLeft: 3,
+    fontWeight: '600',
+  },
+  ratingCount: {
+    fontSize: 11,
+    color: '#999',
+    marginLeft: 3,
+  },
+  gridFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  duration: {
+    fontSize: 11,
+    color: '#666',
+  },
+  gridPrice: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#4ECDC4',
+  },
+
+  // List View Styles
+  listCard: {
+    flexDirection: 'row',
+    backgroundColor: 'white',
+    marginHorizontal: 20,
+    marginBottom: 15,
+    borderRadius: 12,
+    overflow: 'hidden',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  listImage: {
+    width: 100,
+    height: 100,
+    backgroundColor: '#f0f0f0',
+  },
+  listContent: {
+    flex: 1,
+    padding: 12,
+  },
+  listHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 4,
+  },
+  listTitle: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    lineHeight: 20,
+    marginRight: 10,
+  },
+  wishlistButtonList: {
+    padding: 2,
+  },
+  listInstructor: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 4,
+  },
+  listDescription: {
+    fontSize: 13,
+    color: '#999',
+    lineHeight: 16,
+    marginBottom: 8,
+  },
+  listMetrics: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  students: {
+    fontSize: 12,
+    color: '#666',
+    marginLeft: 15,
+  },
+  listFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  listMetaInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  levelBadge: {
+    backgroundColor: '#f0f0f0',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    marginLeft: 8,
+  },
+  levelText: {
+    fontSize: 11,
+    color: '#666',
+  },
+  freeTag: {
+    backgroundColor: '#E8F5E8',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    marginLeft: 8,
+  },
+  freeTagText: {
+    fontSize: 11,
+    color: '#4CAF50',
+    fontWeight: '600',
+  },
+  priceContainer: {
+    alignItems: 'flex-end',
+  },
+  originalPrice: {
+    fontSize: 12,
+    color: '#999',
+    textDecorationLine: 'line-through',
+    marginBottom: 2,
+  },
+  listPrice: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#4ECDC4',
+  },
+
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  filterModal: {
+    backgroundColor: 'white',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '80%',
+  },
+  sortModal: {
+    backgroundColor: 'white',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '60%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  filterContent: {
+    flex: 1,
+    padding: 20,
+  },
+  filterSection: {
+    marginBottom: 25,
+  },
+  filterSectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 12,
+  },
+  filterOptions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  filterOption: {
+    backgroundColor: '#f5f5f5',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginRight: 10,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  filterOptionActive: {
+    backgroundColor: '#4ECDC4',
+    borderColor: '#4ECDC4',
+  },
+  filterOptionText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  filterOptionTextActive: {
+    color: 'white',
+    fontWeight: '600',
+  },
+  modalFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+  },
+  clearButton: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  clearButtonText: {
+    fontSize: 16,
+    color: '#666',
+    fontWeight: '600',
+  },
+  applyButton: {
+    flex: 2,
+    backgroundColor: '#4ECDC4',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  applyButtonText: {
+    fontSize: 16,
+    color: 'white',
+    fontWeight: '600',
+  },
+  sortOptions: {
+    padding: 20,
+  },
+  sortOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  sortOptionActive: {
+    backgroundColor: '#f8f9ff',
+  },
+  sortOptionText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  sortOptionTextActive: {
+    color: '#4ECDC4',
+    fontWeight: '600',
+  },
 });

@@ -1,9 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
-import { ResizeMode, Video } from 'expo-av';
-import { router, useLocalSearchParams } from 'expo-router';
-import React, { useRef, useState } from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { useVideoPlayer, VideoView } from 'expo-video';
+import React, { useEffect, useState } from 'react';
 import {
+    ActivityIndicator,
     Dimensions,
+    Platform,
     SafeAreaView,
     ScrollView,
     StatusBar,
@@ -14,38 +17,37 @@ import {
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 
-
 const { width, height } = Dimensions.get('window');
 
 interface LessonData {
-id: string;
-title: string;
-description: string;
-videoUrl?: string;
-pdfUrl?: string;
-notes: string;
-duration: string;
+    id: string;
+    title: string;
+    description: string;
+    videoUrl?: string;
+    pdfUrl?: string;
+    notes: string;
+    duration: string;
 }
 
 export default function LessonPlayer() {
-const { lessonId } = useLocalSearchParams();
-const [activeTab, setActiveTab] = useState<'video' | 'pdf' | 'notes'>('video');
-const [isPlaying, setIsPlaying] = useState(false);
-const videoRef = useRef<Video>(null);
+    const { lessonId } = useLocalSearchParams();
+    const [activeTab, setActiveTab] = useState<'video' | 'pdf' | 'notes'>('video');
+    const [isLoading, setIsLoading] = useState(false);
 
-// Mock lesson data - replace with actual API call
+ // Mock lesson data - replace with actual API call
 const lessonData: LessonData = {
-    id: lessonId as string,
-    title: 'Introduction to React Native',
-    description: 'Learn the fundamentals of React Native development',
-    videoUrl: 'https://d23dyxeqlo5psv.cloudfront.net/big_buck_bunny.mp4',
-    pdfUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-    notes: `
-# Lesson Notes
+  id: lessonId as string,
+  title: "Introduction to React Native",
+  description: "Learn the fundamentals of React Native development",
+  videoUrl:
+    "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+  pdfUrl:
+    "https://www.adobe.com/support/products/enterprise/knowledgecenter/media/c4611_sample_explain.pdf",
+  notes: `# Lesson Notes
 
 ## Key Concepts
 - React Native basics
-- Component structure
+- Component structure  
 - State management
 - Navigation patterns
 
@@ -57,13 +59,12 @@ const lessonData: LessonData = {
 
 ## Code Examples
 \`\`\`javascript
-
 const App = () => {
-return (
+  return (
     <View>
-        <Text>Hello World!</Text>
+      <Text>Hello World!</Text>
     </View>
-);
+  );
 };
 \`\`\`
 
@@ -71,235 +72,436 @@ return (
 - Official documentation
 - Community tutorials
 - Best practices guide
-    `,
-    duration: '15:30',
+
+---
+
+## Additional Notes
+- React Native apps can access device APIs (camera, GPS, etc.)
+- Expo provides an easy development workflow
+- Use FlatList instead of ScrollView for long lists
+- Always test on both Android and iOS
+
+## Common Pitfalls
+- Forgetting to wrap content in a SafeAreaView on iOS
+- Not optimizing images (causes app size to increase)
+- Mixing inline styles and StyleSheet (leads to messy code)
+- Not handling different screen sizes properly
+
+## Practice Task
+- Create a simple Todo app with React Native
+- Add navigation between "Home" and "Details" screens
+- Store tasks in local state
+- Bonus: Try integrating AsyncStorage for persistence
+`,
+  duration: "15:30",
 };
 
-const handleVideoPlayback = async () => {
-    if (isPlaying) {
-        await videoRef.current?.pauseAsync();
-    } else {
-        await videoRef.current?.playAsync();
-    }
-    setIsPlaying(!isPlaying);
-};
 
-const renderContent = () => {
-    switch (activeTab) {
-        case 'video':
-            return (
-                <View style={styles.videoContainer}>
-                    <Video
-                        ref={videoRef}
-                        style={styles.video}
-                        source={{ uri: lessonData.videoUrl || '' }}
-                        useNativeControls
-                        resizeMode={ResizeMode.CONTAIN}
-                        isLooping={false}
-                        onPlaybackStatusUpdate={(status) => {
-                            if (status.isLoaded) {
-                                setIsPlaying(status.isPlaying || false);
-                            }
-                        }}
-                    />
-                </View>
-            );
-        
-        case 'pdf':
-            return (
-                <View style={styles.pdfContainer}>
-                    {lessonData.pdfUrl ? (
-                        <WebView
-                            source={{ uri: `https://docs.google.com/gview?embedded=true&url=${lessonData.pdfUrl}` }}
-                            style={styles.webview}
-                            javaScriptEnabled={true}
-                            domStorageEnabled={true}
-                        />
-                    ) : (
-                        <View style={styles.emptyState}>
-                            <Ionicons name="document-outline" size={48} color="#ccc" />
-                            <Text style={styles.emptyText}>No PDF available</Text>
+    // Initialize video player
+    const player = useVideoPlayer(lessonData.videoUrl || '', (player) => {
+        player.loop = false;
+        player.play();
+    });
+
+    useEffect(() => {
+        return () => {
+            player?.release();
+        };
+    }, [player]);
+
+    const renderContent = () => {
+        switch (activeTab) {
+            case 'video':
+                return (
+                    <View style={styles.videoContainer}>
+                        <View style={styles.videoWrapper}>
+                            <VideoView
+                                style={styles.video}
+                                player={player}
+                                allowsFullscreen
+                                allowsPictureInPicture
+                                contentFit="contain"
+                            />
+                            <LinearGradient
+                                colors={['rgba(0,0,0,0.3)', 'transparent']}
+                                style={styles.videoOverlay}
+                                pointerEvents="none"
+                            />
                         </View>
-                    )}
-                </View>
-            );
-        
-        case 'notes':
-            return (
-                <ScrollView style={styles.notesContainer} showsVerticalScrollIndicator={false}>
-                    <Text style={styles.notesText}>{lessonData.notes}</Text>
-                </ScrollView>
-            );
-        
-        default:
-            return null;
-    }
-};
+                        <View style={styles.videoInfo}>
+                            <Text style={styles.videoTitle}>{lessonData.title}</Text>
+                            <Text style={styles.videoDescription}>{lessonData.description}</Text>
+                            <View style={styles.videoDuration}>
+                                <Ionicons name="time-outline" size={16} color="#888" />
+                                <Text style={styles.durationText}>{lessonData.duration}</Text>
+                            </View>
+                        </View>
+                    </View>
+                );
 
-return (
-    <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
-        
-        {/* Header */}
-        <View style={styles.header}>
-            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                <Ionicons name="arrow-back" size={24} color="#fff" />
-            </TouchableOpacity>
-            <View style={styles.headerContent}>
-                <Text style={styles.headerTitle} numberOfLines={1}>
-                    {lessonData.title}
-                </Text>
-                <Text style={styles.headerSubtitle}>{lessonData.duration}</Text>
+            case 'pdf':
+                return (
+                    <View style={styles.pdfContainer}>
+                        {lessonData.pdfUrl ? (
+                            <>
+                                {isLoading && (
+                                    <View style={styles.loadingContainer}>
+                                        <ActivityIndicator size="large" color="#007AFF" />
+                                        <Text style={styles.loadingText}>Loading PDF...</Text>
+                                    </View>
+                                )}
+                                <WebView
+                                    source={{ uri: `https://docs.google.com/gview?embedded=true&url=${lessonData.pdfUrl}` }}
+                                    style={[styles.webview, isLoading && { opacity: 0 }]}
+                                    javaScriptEnabled={true}
+                                    domStorageEnabled={true}
+                                    onLoadStart={() => setIsLoading(true)}
+                                    onLoadEnd={() => setIsLoading(false)}
+                                    onError={() => setIsLoading(false)}
+                                />
+                            </>
+                        ) : (
+                            <View style={styles.emptyState}>
+                                <View style={styles.emptyIconContainer}>
+                                    <Ionicons name="document-outline" size={64} color="#444" />
+                                </View>
+                                <Text style={styles.emptyTitle}>No PDF Available</Text>
+                                <Text style={styles.emptySubtitle}>
+                                    PDF content will be available once uploaded
+                                </Text>
+                            </View>
+                        )}
+                    </View>
+                );
+
+            case 'notes':
+                return (
+                    <ScrollView 
+                        style={styles.notesContainer} 
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={styles.notesContent}
+                    >
+                        <View style={styles.notesHeader}>
+                            <Ionicons name="clipboard" size={24} color="#007AFF" />
+                            <Text style={styles.notesHeaderTitle}>Lesson Notes</Text>
+                        </View>
+                        <View style={styles.notesCard}>
+                            <Text style={styles.notesText}>{lessonData.notes}</Text>
+                        </View>
+                    </ScrollView>
+                );
+
+            default:
+                return null;
+        }
+    };
+
+    const TabButton = ({ 
+        icon, 
+        label, 
+        tabKey, 
+        isActive 
+    }: { 
+        icon: string; 
+        label: string; 
+        tabKey: 'video' | 'pdf' | 'notes'; 
+        isActive: boolean;
+    }) => (
+        <TouchableOpacity
+            style={[styles.tab, isActive && styles.activeTab]}
+            onPress={() => setActiveTab(tabKey)}
+            activeOpacity={0.7}
+        >
+            <View style={[styles.tabIconContainer, isActive && styles.activeTabIconContainer]}>
+                <Ionicons
+                    name={icon as any}
+                    size={22}
+                    color={isActive ? '#fff' : '#888'}
+                />
             </View>
-        </View>
+            <Text style={[styles.tabText, isActive && styles.activeTabText]}>
+                {label}
+            </Text>
+        </TouchableOpacity>
+    );
 
-        {/* Content */}
-        <View style={styles.content}>
-            {renderContent()}
-        </View>
+    return (
+        <SafeAreaView style={styles.container}>
+            <StatusBar barStyle="light-content" backgroundColor="#007AFF" />
+            <Stack.Screen options={{ headerShown: false }} />
 
-        {/* Tab Navigation */}
-        <View style={styles.tabContainer}>
-            <TouchableOpacity
-                style={[styles.tab, activeTab === 'video' && styles.activeTab]}
-                onPress={() => setActiveTab('video')}
-            >
-                <Ionicons 
-                    name="play-circle-outline" 
-                    size={20} 
-                    color={activeTab === 'video' ? '#007AFF' : '#666'} 
-                />
-                <Text style={[styles.tabText, activeTab === 'video' && styles.activeTabText]}>
-                    Video
-                </Text>
-            </TouchableOpacity>
+            <View style={styles.customHeader}>
+                <TouchableOpacity 
+                    onPress={() => router.back()}
+                    style={styles.backButton}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                    <Ionicons name="chevron-back" size={24} color="#fff" />
+                </TouchableOpacity>
+                <Text style={styles.customHeaderTitle}>{lessonData.title}</Text>
+                <View style={styles.headerSpacer} />
+            </View>
+       
+            {/* Content */}
+            <View style={styles.content}>
+                {renderContent()}
+            </View>
 
-            <TouchableOpacity
-                style={[styles.tab, activeTab === 'pdf' && styles.activeTab]}
-                onPress={() => setActiveTab('pdf')}
-            >
-                <Ionicons 
-                    name="document-text-outline" 
-                    size={20} 
-                    color={activeTab === 'pdf' ? '#007AFF' : '#666'} 
-                />
-                <Text style={[styles.tabText, activeTab === 'pdf' && styles.activeTabText]}>
-                    PDF
-                </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-                style={[styles.tab, activeTab === 'notes' && styles.activeTab]}
-                onPress={() => setActiveTab('notes')}
-            >
-                <Ionicons 
-                    name="clipboard-outline" 
-                    size={20} 
-                    color={activeTab === 'notes' ? '#007AFF' : '#666'} 
-                />
-                <Text style={[styles.tabText, activeTab === 'notes' && styles.activeTabText]}>
-                    Notes
-                </Text>
-            </TouchableOpacity>
-        </View>
-    </SafeAreaView>
-);
+            {/* Enhanced Tab Navigation */}
+            <View style={styles.tabContainer}>
+                <LinearGradient
+                    colors={['rgba(26,26,26,0.95)', '#1a1a1a']}
+                    style={styles.tabGradient}
+                >
+                    <View style={styles.tabWrapper}>
+                        <TabButton
+                            icon="play-circle"
+                            label="Video"
+                            tabKey="video"
+                            isActive={activeTab === 'video'}
+                        />
+                        <TabButton
+                            icon="document-text"
+                            label="PDF"
+                            tabKey="pdf"
+                            isActive={activeTab === 'pdf'}
+                        />
+                        <TabButton
+                            icon="clipboard"
+                            label="Notes"
+                            tabKey="notes"
+                            isActive={activeTab === 'notes'}
+                        />
+                    </View>
+                </LinearGradient>
+            </View>
+        </SafeAreaView>
+    );
 }
 
 const styles = StyleSheet.create({
-container: {
-    flex: 1,
-    backgroundColor: '#000',
-},
-header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#1a1a1a',
-    borderBottomWidth: 1,
-    borderBottomColor: '#333',
-},
-backButton: {
-    marginRight: 12,
-},
-headerContent: {
-    flex: 1,
-},
-headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#fff',
-    marginBottom: 2,
-},
-headerSubtitle: {
-    fontSize: 14,
-    color: '#888',
-},
-content: {
-    flex: 1,
-    backgroundColor: '#111',
-},
-videoContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-},
-video: {
-    width: width,
-    height: width * 9 / 16, // 16:9 aspect ratio
-},
-pdfContainer: {
-    flex: 1,
-},
-webview: {
-    flex: 1,
-    backgroundColor: '#fff',
-},
-notesContainer: {
-    flex: 1,
-    padding: 20,
-},
-notesText: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: '#fff',
-    fontFamily: 'monospace',
-},
-emptyState: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-},
-emptyText: {
-    fontSize: 16,
-    color: '#ccc',
-    marginTop: 12,
-},
-tabContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#1a1a1a',
-    borderTopWidth: 1,
-    borderTopColor: '#333',
-},
-tab: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 8,
-},
-activeTab: {
-    borderTopWidth: 2,
-    borderTopColor: '#007AFF',
-},
-tabText: {
-    fontSize: 14,
-    color: '#666',
-    marginLeft: 6,
-    fontWeight: '500',
-},
-activeTabText: {
-    color: '#007AFF',
-},
+    container: {
+        flex: 1,
+        backgroundColor: '#000',
+    },
+    customHeader: {
+        backgroundColor: '#007AFF',
+        paddingTop: Platform.OS === 'ios' ? 10 : StatusBar.currentHeight,
+        paddingBottom: 16,
+        paddingHorizontal: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
+    backButton: {
+        padding: 8,
+        borderRadius: 20,
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    },
+    customHeaderTitle: {
+        fontSize: 20,
+        fontWeight: '600',
+        color: '#fff',
+    },
+    headerSpacer: {
+        width: 40,
+    },
+    content: {
+        flex: 1,
+        backgroundColor: '#0a0a0a',
+    },
+    videoContainer: {
+        flex: 1,
+    },
+    videoWrapper: {
+        position: 'relative',
+        backgroundColor: '#000',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: width * 9 / 16, // 16:9 aspect ratio
+    },
+    video: {
+        width: width,
+        height: width * 9 / 16,
+    },
+    videoOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: 60,
+    },
+    videoInfo: {
+        padding: 20,
+        backgroundColor: '#111',
+    },
+    videoTitle: {
+        fontSize: 24,
+        fontWeight: '700',
+        color: '#fff',
+        marginBottom: 8,
+    },
+    videoDescription: {
+        fontSize: 16,
+        color: '#ccc',
+        lineHeight: 24,
+        marginBottom: 12,
+    },
+    videoDuration: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    durationText: {
+        fontSize: 14,
+        color: '#888',
+        marginLeft: 6,
+        fontWeight: '500',
+    },
+    pdfContainer: {
+        flex: 1,
+        backgroundColor: '#f5f5f5',
+    },
+    webview: {
+        flex: 1,
+        backgroundColor: '#fff',
+    },
+    loadingContainer: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#f5f5f5',
+        zIndex: 1000,
+    },
+    loadingText: {
+        fontSize: 16,
+        color: '#666',
+        marginTop: 12,
+        fontWeight: '500',
+    },
+    notesContainer: {
+        flex: 1,
+        backgroundColor: '#0a0a0a',
+    },
+    notesContent: {
+        padding: 20,
+    },
+    notesHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 20,
+        paddingBottom: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: '#222',
+    },
+    notesHeaderTitle: {
+        fontSize: 20,
+        fontWeight: '600',
+        color: '#fff',
+        marginLeft: 12,
+    },
+    notesCard: {
+        backgroundColor: '#111',
+        borderRadius: 12,
+        padding: 20,
+        borderWidth: 1,
+        borderColor: '#222',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
+    notesText: {
+        fontSize: 16,
+        lineHeight: 26,
+        color: '#e0e0e0',
+        fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    },
+    emptyState: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 40,
+    },
+    emptyIconContainer: {
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+        backgroundColor: '#1a1a1a',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 20,
+        borderWidth: 1,
+        borderColor: '#333',
+    },
+    emptyTitle: {
+        fontSize: 20,
+        fontWeight: '600',
+        color: '#fff',
+        marginBottom: 8,
+    },
+    emptySubtitle: {
+        fontSize: 16,
+        color: '#888',
+        textAlign: 'center',
+        lineHeight: 24,
+    },
+    tabContainer: {
+        borderTopWidth: 1,
+        borderTopColor: '#333',
+    },
+    tabGradient: {
+        paddingBottom: Platform.OS === 'ios' ? 20 : 0,
+    },
+    tabWrapper: {
+        flexDirection: 'row',
+        paddingTop: 8,
+    },
+    tab: {
+        flex: 1,
+        alignItems: 'center',
+        paddingVertical: 12,
+        paddingHorizontal: 8,
+    },
+    activeTab: {
+        borderTopWidth: 3,
+        borderTopColor: '#007AFF',
+    },
+    tabIconContainer: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 4,
+    },
+    activeTabIconContainer: {
+        backgroundColor: '#007AFF',
+    },
+    tabText: {
+        fontSize: 12,
+        color: '#888',
+        fontWeight: '600',
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+    },
+    activeTabText: {
+        color: '#007AFF',
+    },
 });

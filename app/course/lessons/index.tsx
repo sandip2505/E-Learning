@@ -1,9 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import React from 'react';
 
 import {
     FlatList,
+    Platform,
+    StatusBar,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -103,8 +105,22 @@ const renderLesson = ({ item }: { item: Lesson }) => (
 
 return (
     <View style={styles.container}>
+        <StatusBar barStyle="light-content" backgroundColor="#007AFF" />
+
+<Stack.Screen options={{ headerShown: false }} />
+
+<View style={styles.customHeader}>
+    <TouchableOpacity onPress={()=> router.back()}
+        style={styles.backButton}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+        <Ionicons name="chevron-back" size={24} color="#fff" />
+    </TouchableOpacity>
+    <Text style={styles.customHeaderTitle}>Course Lessons</Text>
+    <View style={styles.headerSpacer} />
+</View>
         <View style={styles.header}>
-            <Text style={styles.headerTitle}>Course Lessons</Text>
+            {/* <Text style={styles.headerTitle}>Course Lessons</Text> */}
             <Text style={styles.progressText}>3 of 4 completed</Text>
         </View>
         
@@ -124,6 +140,36 @@ container: {
     flex: 1,
     backgroundColor: '#F5F5F5',
 },
+customHeader: {
+        backgroundColor: '#007AFF',
+        paddingTop: Platform.OS === 'ios' ? 10 : StatusBar.currentHeight,
+        paddingBottom: 16,
+        paddingHorizontal: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
+    backButton: {
+        padding: 8,
+        borderRadius: 20,
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    },
+    customHeaderTitle: {
+        fontSize: 20,
+        fontWeight: '600',
+        color: '#fff',
+    },
+    headerSpacer: {
+        width: 40,
+    },
 header: {
     padding: 20,
     backgroundColor: '#FFFFFF',

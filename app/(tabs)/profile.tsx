@@ -55,7 +55,7 @@ export default function Profile() {
                         <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.menuItem}>
+                    <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/onboarding')}>
                         <View style={[styles.menuIcon, { backgroundColor: '#FFF2E8' }]}>
                             <Ionicons name="trophy-outline" size={20} color="#FF9500" />
                         </View>

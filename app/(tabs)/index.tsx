@@ -19,7 +19,7 @@ const { width } = Dimensions.get('window');
 // Dummy Data
 const categories = [
   { id: '1', name: 'Design', icon: 'laptop', color: '#FF6B6B', courses: 120 },
-  { id: '2', name: 'Business', icon: 'business', color: '#4ECDC4', courses: 85 },
+  { id: '2', name: 'Business', icon: 'business', color: '#007AFF', courses: 85 },
   { id: '3', name: 'Technology', icon: 'laptop', color: '#45B7D1', courses: 200 },
   { id: '4', name: 'Marketing', icon: 'trending-up', color: '#96CEB4', courses: 95 },
   { id: '5', name: 'Photography', icon: 'camera', color: '#FECA57', courses: 75 },
@@ -203,7 +203,7 @@ export default function ELearningHomePage() {
             <TouchableOpacity style={styles.headerIcon}>
               <Ionicons name="search" size={24} color="#333" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.headerIcon}>
+            <TouchableOpacity style={styles.headerIcon} onPress={() => router.push('/notification')}>
               <Ionicons name="notifications-outline" size={24} color="#333" />
               <View style={styles.notificationBadge} />
             </TouchableOpacity>
@@ -246,7 +246,7 @@ export default function ELearningHomePage() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Featured Courses</Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/course')}>
               <Text style={styles.seeAll}>See all</Text>
             </TouchableOpacity>
           </View>
@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
   logo: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#4ECDC4',
+    color: '#007AFF',
   },
   headerRight: {
     flexDirection: 'row',
@@ -476,7 +476,7 @@ const styles = StyleSheet.create({
   },
   seeAll: {
     fontSize: 14,
-    color: '#4ECDC4',
+    color: '#007AFF',
     fontWeight: '600',
   },
   categoriesList: {
@@ -521,6 +521,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+    marginBottom: 10,
   },
   featuredImage: {
     width: '100%',
@@ -535,7 +536,7 @@ const styles = StyleSheet.create({
   },
   categoryLabel: {
     fontSize: 12,
-    color: '#4ECDC4',
+    color: '#007AFF',
     fontWeight: '600',
     textTransform: 'uppercase',
   },
@@ -579,7 +580,7 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#4ECDC4',
+    color: '#007AFF',
   },
   continueCard: {
     backgroundColor: 'white',
@@ -623,12 +624,12 @@ const styles = StyleSheet.create({
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#4ECDC4',
+    backgroundColor: '#007AFF',
     borderRadius: 3,
   },
   progressPercent: {
     fontSize: 12,
-    color: '#4ECDC4',
+    color: '#007AFF',
     fontWeight: '600',
   },
   nextLesson: {
@@ -706,7 +707,7 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: '#4ECDC4',
+    backgroundColor: '#007AFF',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -760,7 +761,7 @@ const styles = StyleSheet.create({
   },
   upcomingDate: {
     fontSize: 12,
-    color: '#4ECDC4',
+    color: '#007AFF',
     fontWeight: '600',
     marginBottom: 2,
   },
@@ -788,7 +789,7 @@ const styles = StyleSheet.create({
     color: '#999',
   },
   joinButton: {
-    backgroundColor: '#4ECDC4',
+    backgroundColor: '#007AFF',
     paddingHorizontal: 20,
     paddingVertical: 8,
     borderRadius: 8,
@@ -827,7 +828,7 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#4ECDC4',
+    color: '#007AFF',
     marginBottom: 3,
   },
   statLabel: {

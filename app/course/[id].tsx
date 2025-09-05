@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
-import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -20,7 +20,7 @@ export default function CourseDetails() {
         lessons: 156,
         price: '$99.99',
         originalPrice: '$199.99',
-        thumbnail: 'https://via.placeholder.com/400x200',
+        thumbnail: 'https://www.visual-craft.com/strapi/uploads/React_Native_2_c5ab49be9b.png',
         description: 'Master React Native development from scratch. Build real-world mobile applications for both iOS and Android platforms.',
         features: [
             'Build cross-platform mobile apps',
@@ -40,10 +40,15 @@ export default function CourseDetails() {
 
     return (
         <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-            {/* Header */}
+            <Stack.Screen options={{ headerShown: false }} />
+            <StatusBar barStyle="light-content" backgroundColor="#007AFF" />
+
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="#fff" />
+                <TouchableOpacity onPress={() => router.back()}
+                    style={styles.backButton}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                    <Ionicons name="chevron-back" size={24} color="#fff" />
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.favoriteButton}>
                     <Ionicons name="heart-outline" size={24} color="#fff" />
@@ -133,16 +138,12 @@ const styles = StyleSheet.create({
         zIndex: 1,
     },
     backButton: {
-        width: 40,
-        height: 40,
+        padding: 8,
         borderRadius: 20,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
     },
     favoriteButton: {
-        width: 40,
-        height: 40,
+        padding: 8,
         borderRadius: 20,
         backgroundColor: 'rgba(0,0,0,0.5)',
         justifyContent: 'center',

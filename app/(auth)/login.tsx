@@ -39,24 +39,24 @@ export default function LoginScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
-           
+            <StatusBar barStyle="light-content" backgroundColor="#007AFF" />
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 style={styles.keyboardView}
             >
                 <Stack.Screen options={{ headerShown: false }} />
-                
-                        <View style={styles.customHeader}>
-                          <TouchableOpacity 
-                            onPress={() => router.back()} 
-                            style={styles.backButton}
-                            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                          >
-                            <Ionicons name="chevron-back" size={24} color="#fff" />
-                          </TouchableOpacity>
-                          <Text style={styles.customHeaderTitle}>Login</Text>
-                          <View style={styles.headerSpacer} />
-                        </View>
+
+                <View style={styles.customHeader}>
+                    <TouchableOpacity
+                        onPress={() => router.back()}
+                        style={styles.backButton}
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    >
+                        <Ionicons name="chevron-back" size={24} color="#fff" />
+                    </TouchableOpacity>
+                    <Text style={styles.customHeaderTitle}>Login</Text>
+                    <View style={styles.headerSpacer} />
+                </View>
                 <ScrollView contentContainerStyle={styles.scrollContainer}>
                     <View style={styles.header}>
                         <Ionicons name="school" size={60} color="#4A90E2" />
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         padding: 24,
     },
-      customHeader: {
+    customHeader: {
         backgroundColor: '#007AFF',
         paddingTop: Platform.OS === 'ios' ? 10 : StatusBar.currentHeight,
         paddingBottom: 16,
@@ -161,26 +161,26 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         shadowColor: '#000',
         shadowOffset: {
-          width: 0,
-          height: 2,
+            width: 0,
+            height: 2,
         },
         shadowOpacity: 0.1,
         shadowRadius: 3.84,
         elevation: 5,
-      },
-      backButton: {
+    },
+    backButton: {
         padding: 8,
         borderRadius: 20,
         backgroundColor: 'rgba(255, 255, 255, 0.2)',
-      },
-      customHeaderTitle: {
+    },
+    customHeaderTitle: {
         fontSize: 20,
         fontWeight: '600',
         color: '#fff',
-      },
-      headerSpacer: {
+    },
+    headerSpacer: {
         width: 40,
-      },
+    },
     header: {
         alignItems: 'center',
         marginBottom: 48,
